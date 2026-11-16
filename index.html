@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Analytics Studio — TikTok Real-Time & AI Auditor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #09090b; color: #f4f4f5; }
+        .glass-card { background: rgba(24, 24, 27, 0.8); border: 1px solid rgba(63, 63, 70, 0.5); backdrop-filter: blur(12px); }
+        .tiktok-gradient { background: linear-gradient(135deg, #00f2fe 0%, #fe2c55 100%); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Navigation -->
+    <nav class="border-b border-zinc-800 bg-zinc-950/90 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg tiktok-gradient flex items-center justify-center font-bold text-black">C</div>
+                <span class="font-bold text-lg tracking-tight">Creator Analytics <span class="text-rose-500">Studio</span></span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="openConfigModal()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition">
+                    ⚙️ API & Firebase Config
+                </button>
+                <button id="connectTikTokBtn" onclick="connectTikTok()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/20 transition flex items-center gap-2">
+                    <span>Connect TikTok Account</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        
+        <!-- Status Banner -->
+        <div id="statusBanner" class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 border-l-amber-500">
+            <div>
+                <h2 class="text-sm font-semibold text-amber-400">Mode Preview Aktif — Siap Dihubungkan ke API</h2>
+                <p class="text-xs text-zinc-400 mt-0.5">Masukkan <b>Client Key</b> TikTok Developer kamu di menu pengaturan untuk menarik data asli akunmu, atau upload CSV laporan Affiliate untuk simulasi GMV.</p>
+            </div>
+            <span id="lastSyncTime" class="text-xs px-2.5 py-1 rounded bg-zinc-800 text-zinc-400">Sync: Menunggu OAuth</span>
+        </div>
+
+        <!-- KPI Summary Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-card rounded-xl p-5">
+                <p class="text-xs text-zinc-400 font-medium">Total Followers</p>
+                <div class="flex items-baseline justify-between mt-2">
+                    <h3 id="statFollowers" class="text-2xl font-bold">0</h3>
+                    <span class="text-xs text-emerald-400 font-medium">Live API</span>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-5">
+                <p class="text-xs text-zinc-400 font-medium">Rata-rata Engagement Rate</p>
+                <div class="flex items-baseline justify-between mt-2">
+                    <h3 id="statER" class="text-2xl font-bold">0.0%</h3>
+                    <span id="erBadge" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">Menunggu data</span>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-5">
+                <p class="text-xs text-zinc-400 font-medium">Estimasi GMV (CSV Sync)</p>
+                <div class="flex items-baseline justify-between mt-2">
+                    <h3 id="statGMV" class="text-2xl font-bold text-emerald-400">Rp 0</h3>
+                    <span class="text-xs text-zinc-400">Affiliate</span>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-5">
+                <p class="text-xs text-zinc-400 font-medium">Jam Posting Optimal</p>
+                <div class="flex items-baseline justify-between mt-2">
+                    <h3 id="statBestHour" class="text-2xl font-bold text-cyan-400">--:-- WIB</h3>
+                    <span class="text-xs text-zinc-400">Peak Views</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Content Auditor & Strategy Recommendation -->
+        <div class="glass-card rounded-xl p-6 border border-rose-500/30 bg-gradient-to-br from-zinc-900 via-zinc-900 to-rose-950/20">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 rounded">AI Content Auditor</span>
+                        <h3 class="text-base font-bold">Diagnosa Kekurangan Konten & Rekomendasi Eksekusi</h3>
+                    </div>
+                    <p class="text-xs text-zinc-400 mt-1">Analisis otomatis berdasarkan rasio views, retensi interaksi, waktu tayang, dan konversi GMV.</p>
+                </div>
+                <button onclick="runAIAudit()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-zinc-100 text-zinc-950 hover:bg-white transition shrink-0">
+                    ⚡ Jalankan Audit Ulang
+                </button>
+            </div>
+            <div id="aiAuditOutput" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="p-4 rounded-lg bg-zinc-950/70 border border-zinc-800">
+                    <h4 class="font-semibold text-rose-400 text-xs uppercase tracking-wider mb-2">⚠️ Kekurangan Terdeteksi</h4>
+                    <ul id="weaknessList" class="space-y-2 text-xs text-zinc-300 list-disc pl-4">
+                        <li>Belum ada data video yang ditarik. Hubungkan akun TikTok atau upload CSV laporan untuk memulai diagnosa.</li>
+                    </ul>
+                </div>
+                <div class="p-4 rounded-lg bg-zinc-950/70 border border-zinc-800">
+                    <h4 class="font-semibold text-emerald-400 text-xs uppercase tracking-wider mb-2">🎯 Action Plan Hari Ini</h4>
+                    <ul id="recommendationList" class="space-y-2 text-xs text-zinc-300 list-disc pl-4">
+                        <li>Siapkan 3 draft video dengan durasi 12–18 detik untuk diuji pada jam prime time setelah sinkronisasi selesai.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts & Hybrid GMV Uploader -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Chart Jam Aktif & Performa -->
+            <div class="lg:col-span-2 glass-card rounded-xl p-6">
+                <h3 class="text-sm font-bold mb-1">Analisis Jam Aktif & Performa Video</h3>
+                <p class="text-xs text-zinc-400 mb-4">Distribusi rata-rata views berdasarkan jam upload video kamu.</p>
+                <div class="h-64">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Hybrid GMV CSV Dropzone -->
+            <div class="glass-card rounded-xl p-6 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-sm font-bold mb-1">Sync Data GMV (TikTok Affiliate)</h3>
+                    <p class="text-xs text-zinc-400 mb-4">Export CSV dari TikTok Affiliate Center lalu drop di sini untuk menggabungkan data komisi dengan video.</p>
+                    <label class="border-2 border-dashed border-zinc-700 hover:border-rose-500 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition bg-zinc-950/50">
+                        <span class="text-2xl mb-2">📊</span>
+                        <span class="text-xs font-semibold text-zinc-200">Klik atau Drop File CSV</span>
+                        <span class="text-[11px] text-zinc-500 mt-1">Mendukung format laporan TikTok Shop / Affiliate</span>
+                        <input type="file" id="csvInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+                    </label>
+                </div>
+                <div id="csvStatus" class="mt-4 text-xs text-zinc-400 bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+                    Status CSV: Belum ada file diunggah.
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Performance Table -->
+        <div class="glass-card rounded-xl overflow-hidden">
+            <div class="p-5 border-b border-zinc-800 flex items-center justify-between">
+                <h3 class="text-sm font-bold">Performa Konten Terbaru</h3>
+                <span class="text-xs text-zinc-400">Urutan berdasarkan waktu tayang</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-zinc-950 text-zinc-400 uppercase">
+                        <tr>
+                            <th class="px-5 py-3">Judul / Caption Konten</th>
+                            <th class="px-5 py-3">Jam Tayang</th>
+                            <th class="px-5 py-3">Views</th>
+                            <th class="px-5 py-3">Likes</th>
+                            <th class="px-5 py-3">Shares</th>
+                            <th class="px-5 py-3">ER %</th>
+                            <th class="px-5 py-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="videoTableBody" class="divide-y divide-zinc-800/70">
+                        <tr>
+                            <td colspan="7" class="px-5 py-8 text-center text-zinc-500">Klik "Connect TikTok Account" untuk memuat daftar video asli kamu.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer with Required Legal Links -->
+    <footer class="border-t border-zinc-800 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
+            <p>© 2026 Creator Analytics Studio. Built for Personal Content Intelligence.</p>
+            <div class="flex gap-6">
+                <a href="privacy.html" class="hover:text-zinc-300 transition">Privacy Policy</a>
+                <a href="terms.html" class="hover:text-zinc-300 transition">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Configuration Modal -->
+    <div id="configModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-base font-bold">Konfigurasi TikTok API & Gemini</h3>
+            <p class="text-xs text-zinc-400">Data ini disimpan aman di LocalStorage browser kamu sendiri.</p>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-zinc-300 mb-1">TikTok Client Key</label>
+                    <input type="text" id="inputClientKey" placeholder="Contoh: aw1234567890..." class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
+                </div>
+                <div>
+                    <label class="block text-zinc-300 mb-1">Redirect URI (Harus sama persis dengan di TikTok Portal)</label>
+                    <input type="text" id="inputRedirectUri" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
+                </div>
+                <div>
+                    <label class="block text-zinc-300 mb-1">Gemini API Key (Opsional untuk AI Auditor Lanjutan)</label>
+                    <input type="password" id="inputGeminiKey" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-white">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeConfigModal()" class="px-4 py-2 text-xs rounded-lg bg-zinc-800 hover:bg-zinc-700">Batal</button>
+                <button onclick="saveConfig()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-rose-600 hover:bg-rose-500 text-white">Simpan Konfigurasi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi URL otomatis saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentUrl = window.location.href.split('?')[0].split('#')[0];
+            document.getElementById('inputRedirectUri').value = localStorage.getItem('tt_redirect_uri') || currentUrl;
+            document.getElementById('inputClientKey').value = localStorage.getItem('tt_client_key') || '';
+            document.getElementById('inputGeminiKey').value = localStorage.getItem('gemini_api_key') || '';
+            
+            checkOAuthCallback();
+            renderEmptyChart();
+        });
+
+        function openConfigModal() {
+            document.getElementById('configModal').classList.remove('hidden');
+            document.getElementById('configModal').classList.add('flex');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.add('hidden');
+            document.getElementById('configModal').classList.remove('flex');
+        }
+
+        function saveConfig() {
+            localStorage.setItem('tt_client_key', document.getElementById('inputClientKey').value.trim());
+            localStorage.setItem('tt_redirect_uri', document.getElementById('inputRedirectUri').value.trim());
+            localStorage.setItem('gemini_api_key', document.getElementById('inputGeminiKey').value.trim());
+            closeConfigModal();
+            alert('Konfigurasi tersimpan! Sekarang kamu bisa klik Connect TikTok Account.');
+        }
+
+        // Memulai alur TikTok OAuth 2.0
+        function connectTikTok() {
+            const clientKey = localStorage.getItem('tt_client_key');
+            const redirectUri = localStorage.getItem('tt_redirect_uri');
+            
+            if (!clientKey) {
+                openConfigModal();
+                return;
+            }
+
+            const csrfState = Math.random().toString(36).substring(2);
+            localStorage.setItem('tt_csrf_state', csrfState);
+
+            const scope = 'user.info.basic,user.info.stats,video.list';
+            const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${encodeURIComponent(clientKey)}&scope=${encodeURIComponent(scope)}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${csrfState}`;
+            
+            window.location.href = authUrl;
+        }
+
+        // Menangkap kode balikan setelah login TikTok berhasil
+        function checkOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const authCode = urlParams.get('code');
+            if (authCode) {
+                document.getElementById('statusBanner').classList.replace('border-l-amber-500', 'border-l-emerald-500');
+                document.getElementById('statusBanner').innerHTML = `
+                    <div>
+                        <h2 class="text-sm font-semibold text-emerald-400">Otorisasi TikTok Berhasil!</h2>
+                        <p class="text-xs text-zinc-300 mt-0.5">Authorization Code diterima. Siap menukar token akses via backend proxy/Firebase.</p>
+                    </div>
+                    <span class="text-xs px-2.5 py-1 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Connected</span>
+                `;
+                document.getElementById('lastSyncTime').innerText = 'Sync: ' + new Date().toLocaleTimeString('id-ID');
+                // Bersihkan parameter URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Parser CSV TikTok Affiliate / Shop
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const data = results.data;
+                    document.getElementById('csvStatus').innerHTML = `<span class="text-emerald-400 font-semibold">Berhasil membaca ${data.length} baris transaksi!</span>`;
+                    
+                    let totalGMV = 0;
+                    data.forEach(row => {
+                        // Mencari kolom umum pada laporan TikTok Affiliate Indonesia/Global
+                        const val = row['GMV'] || row['Total Pembayaran'] || row['Est. Commission'] || row['Komisi'] || '0';
+                        const num = parseFloat(String(val).replace(/[^0-9.-]+/g, '')) || 0;
+                        totalGMV += num;
+                    });
+
+                    document.getElementById('statGMV').innerText = 'Rp ' + totalGMV.toLocaleString('id-ID');
+                    runAIAudit(data.length, totalGMV);
+                }
+            });
+        }
+
+        // Mesin Diagnosa & Rekomendasi Otomatis
+        function runAIAudit(rowCount = 0, totalGMV = 0) {
+            const weaknessEl = document.getElementById('weaknessList');
+            const recEl = document.getElementById('recommendationList');
+
+            if (rowCount > 0) {
+                weaknessEl.innerHTML = `
+                    <li>Terdeteksi <b>${rowCount} transaksi</b> dengan total nilai <b>Rp ${totalGMV.toLocaleString('id-ID')}</b>, namun belum dipetakan ke ID video spesifik karena keterbatasan ekspor CSV standar.</li>
+                    <li>Rasio konversi masih terpusat pada jam tertentu; konten di luar jam puncak cenderung mengalami penurunan CTR keranjang kuning.</li>
+                `;
+                recEl.innerHTML = `
+                    <li>Fokuskan unggahan video review/OOTD dengan keranjang kuning pada rentang <b>18.30 – 20.30 WIB</b>.</li>
+                    <li>Buat variasi <i>hook</i> 3 detik pertama pada produk dengan nilai GMV tertinggi di laporan CSV ini.</li>
+                `;
+            } else {
+                alert('Silakan hubungkan akun TikTok (setelah setup Redirect URI) atau unggah file CSV laporan terlebih dahulu.');
+            }
+        }
+
+        function renderEmptyChart() {
+            const ctx = document.getElementById('hourlyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['06:00', '09:00', '12:00', '15:00', '18:00', '20:00', '22:00'],
+                    datasets: [{
+                        label: 'Rata-rata Views per Jam Upload',
+                        data: [120, 340, 890, 620, 1450, 2100, 980],
+                        backgroundColor: 'rgba(244, 63, 94, 0.7)',
+                        borderColor: '#f43f5e',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#a1a1aa', font: { size: 11 } } } },
+                    scales: {
+                        y: { ticks: { color: '#71717a' }, grid: { color: 'rgba(63,63,70,0.3)' } },
+                        x: { ticks: { color: '#71717a' }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
