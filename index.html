@@ -24,7 +24,10 @@
         <span class="font-bold text-lg tracking-tight">Creator Analytics <span class="text-rose-500">Studio</span></span>
       </div>
 
-      <div class="flex items-center gap-2.5 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="syncRealTimeData(true)" id="syncBtn" class="hidden px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-semibold text-emerald-400 transition flex items-center gap-1.5">
+          <span>🔄 Sync Real-Time</span>
+        </button>
         <button onclick="exportBackupJSON()" title="Download Backup JSON" class="px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-300 transition">
           ⬇ Backup
         </button>
@@ -32,10 +35,10 @@
           ⬆ Restore
           <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importBackupJSON(event)">
         </label>
-        <button onclick="openConfigModal()" class="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs sm:text-sm font-medium text-zinc-200 transition">
+        <button onclick="openConfigModal()" class="px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-200 transition">
           ⚙️ API & Config
         </button>
-        <button onclick="connectTikTok()" id="connectBtn" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs sm:text-sm font-semibold text-white transition shadow-lg shadow-rose-600/20">
+        <button onclick="connectTikTok()" id="connectBtn" class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white transition shadow-lg shadow-rose-600/20">
           Connect TikTok Account
         </button>
       </div>
@@ -46,24 +49,35 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
 
     <!-- Status Banner -->
-    <div id="statusBanner" class="glass-card rounded-xl p-4 flex items-center justify-between border-l-4 border-l-zinc-600">
+    <div id="statusBanner" class="glass-card rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-l-4 border-l-zinc-600">
       <div class="flex items-center gap-3">
-        <img id="userAvatar" src="" alt="Avatar" class="w-10 h-10 rounded-full hidden border border-zinc-700 object-cover">
+        <img id="userAvatar" src="" alt="Avatar" class="w-11 h-11 rounded-full hidden border border-zinc-700 object-cover">
         <div>
           <h2 id="statusTitle" class="text-sm font-semibold text-zinc-200">Belum Terhubung ke TikTok API</h2>
-          <p id="statusDesc" class="text-xs text-zinc-400 mt-0.5">Klik "Connect TikTok Account" untuk menarik data profil & video real-time, atau upload CSV laporan Affiliate untuk simulasi GMV.</p>
+          <p id="statusDesc" class="text-xs text-zinc-400 mt-0.5">Klik "Connect TikTok Account" untuk menarik data profil & seluruh video secara real-time.</p>
         </div>
       </div>
-      <span id="statusBadge" class="px-3 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-400">Offline</span>
+      <div class="flex items-center gap-2 self-end sm:self-center">
+        <span id="lastSyncText" class="text-[11px] text-zinc-500"></span>
+        <span id="statusBadge" class="px-3 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-400">Offline</span>
+      </div>
     </div>
 
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <div class="glass-card rounded-xl p-5">
         <div class="text-xs text-zinc-400 font-medium">Total Followers</div>
         <div class="mt-2 flex items-baseline justify-between">
           <span id="kpiFollowers" class="text-2xl font-bold text-white">0</span>
-          <span id="kpiTotalLikes" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">Live API</span>
+          <span id="kpiTotalLikes" class="text-[11px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">0 Likes</span>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl p-5">
+        <div class="text-xs text-zinc-400 font-medium">Rata-rata Views / Video</div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="kpiAvgViews" class="text-2xl font-bold text-white">0</span>
+          <span id="kpiTotalViews" class="text-[11px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">0 Total</span>
         </div>
       </div>
 
@@ -71,15 +85,7 @@
         <div class="text-xs text-zinc-400 font-medium">Rata-rata Engagement Rate</div>
         <div class="mt-2 flex items-baseline justify-between">
           <span id="kpiER" class="text-2xl font-bold text-white">0.0%</span>
-          <span id="kpiERStatus" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">Menunggu data</span>
-        </div>
-      </div>
-
-      <div class="glass-card rounded-xl p-5">
-        <div class="text-xs text-zinc-400 font-medium">Estimasi GMV (CSV Sync)</div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <span id="kpiGMV" class="text-2xl font-bold text-emerald-400">Rp 0</span>
-          <span class="text-xs px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/50">Affiliate</span>
+          <span id="kpiERStatus" class="text-[11px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">Menunggu</span>
         </div>
       </div>
 
@@ -87,7 +93,15 @@
         <div class="text-xs text-zinc-400 font-medium">Jam Posting Optimal</div>
         <div class="mt-2 flex items-baseline justify-between">
           <span id="kpiBestHour" class="text-2xl font-bold text-cyan-400">--:-- WIB</span>
-          <span class="text-xs px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/50">Peak Views</span>
+          <span class="text-[11px] px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/50">Peak Views</span>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl p-5">
+        <div class="text-xs text-zinc-400 font-medium">Estimasi GMV (CSV Sync)</div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="kpiGMV" class="text-2xl font-bold text-emerald-400">Rp 0</span>
+          <span class="text-[11px] px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/50">Affiliate</span>
         </div>
       </div>
     </div>
@@ -98,51 +112,59 @@
         <div>
           <div class="flex items-center gap-2">
             <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30">AI Content Auditor</span>
-            <h3 class="text-base font-bold text-white">Diagnosa Kekurangan Konten & Rekomendasi Eksekusi</h3>
+            <h3 class="text-base font-bold text-white">Diagnosa Performa & Rekomendasi Eksekusi Konten</h3>
           </div>
-          <p class="text-xs text-zinc-400 mt-1">Analisis otomatis berdasarkan rasio views, retensi interaksi, waktu tayang, dan konversi GMV.</p>
+          <p id="aiModeSubtitle" class="text-xs text-zinc-400 mt-1">Analisis otomatis berbasis rasio views, retensi interaksi, durasi video, dan Gemini AI.</p>
         </div>
-        <button onclick="runAIAudit()" id="auditBtn" class="px-4 py-2 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold transition shrink-0">
-          ⚡ Jalankan Audit Ulang
+        <button onclick="runAIAudit(true)" id="auditBtn" class="px-4 py-2 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold transition shrink-0">
+          ⚡ Jalankan Audit AI
         </button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg p-4">
-          <div class="text-xs font-bold text-amber-400 uppercase tracking-wide mb-2">⚠️ Kekurangan Terdeteksi</div>
-          <ul id="auditWeaknesses" class="text-xs text-zinc-300 space-y-2 list-disc list-inside">
-            <li>Belum ada data video yang ditarik. Hubungkan akun TikTok atau upload CSV laporan untuk memulai diagnosa.</li>
+          <div class="text-xs font-bold text-amber-400 uppercase tracking-wide mb-2">⚠️ Evaluasi & Celah Algoritma</div>
+          <ul id="auditWeaknesses" class="text-xs text-zinc-300 space-y-2 list-disc list-inside leading-relaxed">
+            <li>Menunggu sinkronisasi data video untuk memulai diagnosa.</li>
           </ul>
         </div>
         <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg p-4">
-          <div class="text-xs font-bold text-emerald-400 uppercase tracking-wide mb-2">🎯 Action Plan Hari Ini</div>
-          <ul id="auditActions" class="text-xs text-zinc-300 space-y-2 list-disc list-inside">
-            <li>Siapkan 3 draft video dengan durasi 12–18 detik untuk diuji pada jam prime time setelah sinkronisasi selesai.</li>
+          <div class="text-xs font-bold text-emerald-400 uppercase tracking-wide mb-2">🎯 Action Plan & Ide Hook Hari Ini</div>
+          <ul id="auditActions" class="text-xs text-zinc-300 space-y-2 list-disc list-inside leading-relaxed">
+            <li>Masukkan Gemini API Key di ⚙️ API & Config untuk mendapatkan ide skrip & hook fashion affiliate yang dipersonalisasi.</li>
           </ul>
         </div>
       </div>
     </div>
 
-    <!-- Chart & CSV Sync -->
+    <!-- Charts & CSV Sync -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="glass-card rounded-xl p-5 lg:col-span-2">
-        <h3 class="text-sm font-bold text-white">Analisis Jam Aktif & Performa Video</h3>
-        <p class="text-xs text-zinc-400 mb-4">Distribusi rata-rata views berdasarkan jam upload video kamu.</p>
-        <div class="h-64">
+      <div class="glass-card rounded-xl p-5">
+        <h3 class="text-sm font-bold text-white">Jam Aktif & Rata-rata Views</h3>
+        <p class="text-xs text-zinc-400 mb-4">Distribusi performa berdasarkan jam upload.</p>
+        <div class="h-56">
           <canvas id="hourlyChart"></canvas>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl p-5">
+        <h3 class="text-sm font-bold text-white">Performa Berdasarkan Durasi</h3>
+        <p class="text-xs text-zinc-400 mb-4">Rata-rata views menurut panjang durasi video.</p>
+        <div class="h-56">
+          <canvas id="durationChart"></canvas>
         </div>
       </div>
 
       <div class="glass-card rounded-xl p-5 flex flex-col justify-between">
         <div>
           <h3 class="text-sm font-bold text-white">Sync Data GMV (TikTok Affiliate)</h3>
-          <p class="text-xs text-zinc-400 mt-1">Export CSV dari TikTok Affiliate Center lalu drop di sini untuk menggabungkan data komisi dengan video.</p>
+          <p class="text-xs text-zinc-400 mt-1">Export CSV dari TikTok Affiliate Center lalu drop di sini untuk menggabungkan data komisi.</p>
         </div>
 
         <label class="mt-4 border-2 border-dashed border-zinc-700 hover:border-rose-500/70 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition bg-zinc-950/40">
           <span class="text-2xl mb-2">📊</span>
           <span class="text-xs font-semibold text-zinc-200">Klik atau Drop File CSV</span>
-          <span class="text-[11px] text-zinc-500 mt-1">Mendukung format laporan Video / Produk Affiliate</span>
+          <span class="text-[11px] text-zinc-500 mt-1">Laporan Video / Produk TikTok Affiliate</span>
           <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
         </label>
 
@@ -152,19 +174,30 @@
 
     <!-- Video Performance Table -->
     <div class="glass-card rounded-xl overflow-hidden">
-      <div class="p-5 border-b border-zinc-800 flex items-center justify-between">
+      <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 class="text-sm font-bold text-white">Performa Video Terbaru</h3>
-          <p class="text-xs text-zinc-400">Data langsung dari TikTok Display API (`/v2/video/list/`).</p>
+          <h3 class="text-sm font-bold text-white">Katalog Performa Video</h3>
+          <p class="text-xs text-zinc-400">Seluruh video yang ditarik langsung dari TikTok API.</p>
         </div>
-        <span id="videoCountBadge" class="text-xs px-2.5 py-1 rounded-md bg-zinc-800 text-zinc-300">0 Video</span>
+        <div class="flex items-center gap-2 flex-wrap">
+          <input type="text" id="videoSearchInput" oninput="applyVideoFilter()" placeholder="Cari caption / produk..." class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
+          <select id="videoSortSelect" onchange="applyVideoFilter()" class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-zinc-200 focus:outline-none focus:border-rose-500">
+            <option value="newest">Terbaru</option>
+            <option value="views">Views Tertinggi</option>
+            <option value="er">Engagement Rate Tertinggi</option>
+            <option value="likes">Likes Terbanyak</option>
+            <option value="comments">Komentar Terbanyak</option>
+          </select>
+          <span id="videoCountBadge" class="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 font-medium">0 Video</span>
+        </div>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto max-h-[540px] overflow-y-auto">
         <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="border-b border-zinc-800 bg-zinc-950/60 text-[11px] uppercase text-zinc-400">
+          <thead class="sticky top-0 bg-zinc-950 z-10">
+            <tr class="border-b border-zinc-800 text-[11px] uppercase text-zinc-400">
               <th class="py-3 px-4">Konten Video</th>
               <th class="py-3 px-4">Waktu Upload</th>
+              <th class="py-3 px-4 text-right">Durasi</th>
               <th class="py-3 px-4 text-right">Views</th>
               <th class="py-3 px-4 text-right">Likes</th>
               <th class="py-3 px-4 text-right">Komentar</th>
@@ -174,7 +207,7 @@
           </thead>
           <tbody id="videoTableBody" class="divide-y divide-zinc-800/60 text-xs">
             <tr>
-              <td colspan="7" class="py-8 text-center text-zinc-500">Belum ada data video. Hubungkan akun TikTok untuk memuat video.</td>
+              <td colspan="8" class="py-8 text-center text-zinc-500">Belum ada data video. Hubungkan akun TikTok untuk memuat video.</td>
             </tr>
           </tbody>
         </table>
@@ -187,17 +220,17 @@
   <div id="configModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div>
-        <h3 class="text-base font-bold text-white">Konfigurasi TikTok API & Worker</h3>
+        <h3 class="text-base font-bold text-white">Konfigurasi TikTok API & Gemini AI</h3>
         <p class="text-xs text-zinc-400 mt-1">Data disimpan aman di LocalStorage browser kamu sendiri.</p>
       </div>
 
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-medium text-zinc-300 mb-1">TikTok Client Key (Sandbox / Production)</label>
+          <label class="block text-xs font-medium text-zinc-300 mb-1">TikTok Client Key</label>
           <input type="text" id="cfgClientKey" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
         </div>
         <div>
-          <label class="block text-xs font-medium text-zinc-300 mb-1">Redirect URI (Harus sama persis dengan di TikTok Portal)</label>
+          <label class="block text-xs font-medium text-zinc-300 mb-1">Redirect URI</label>
           <input type="text" id="cfgRedirectUri" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
         </div>
         <div>
@@ -205,7 +238,7 @@
           <input type="text" id="cfgWorkerUrl" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
         </div>
         <div>
-          <label class="block text-xs font-medium text-zinc-300 mb-1">Gemini API Key (Opsional untuk AI Auditor Lanjutan)</label>
+          <label class="block text-xs font-medium text-zinc-300 mb-1">Gemini API Key (Untuk AI Auditor & Ide Konten Otomatis)</label>
           <input type="password" id="cfgGeminiKey" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
         </div>
       </div>
@@ -218,7 +251,6 @@
   </div>
 
   <script>
-    // Konfigurasi Default
     const DEFAULT_CONFIG = {
       clientKey: "sbaww1lzndtyn8cp0j",
       redirectUri: "https://developed-by-boby-anggara.github.io/tiktok-creator-analytics/",
@@ -227,6 +259,7 @@
     };
 
     let hourlyChartInstance = null;
+    let durationChartInstance = null;
 
     function getConfig() {
       const saved = JSON.parse(localStorage.getItem("tiktok_studio_config") || "{}");
@@ -262,18 +295,55 @@
       alert("Konfigurasi berhasil disimpan!");
     }
 
-    // 1. Trigger OAuth Login TikTok
     function connectTikTok() {
       const cfg = getConfig();
       const csrfState = Math.random().toString(36).substring(2);
-      localStorage.setItem("tiktok_csrf_state", csrfState);
-
       const scopes = "user.info.basic,user.info.profile,user.info.stats,video.list";
       const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${encodeURIComponent(cfg.clientKey)}&scope=${encodeURIComponent(scopes)}&response_type=code&redirect_uri=${encodeURIComponent(cfg.redirectUri)}&state=${csrfState}`;
       window.location.href = authUrl;
     }
 
-    // 2. Tangkap Authorization Code & Tukar via Cloudflare Worker
+    // Sinkronisasi Real-Time memakai token yang sudah tersimpan tanpa perlu login ulang
+    async function syncRealTimeData(isManual = false) {
+      const accessToken = localStorage.getItem("tiktok_access_token");
+      const refreshToken = localStorage.getItem("tiktok_refresh_token");
+      if (!accessToken && !refreshToken) {
+        if (isManual) connectTikTok();
+        return;
+      }
+
+      const syncBtn = document.getElementById("syncBtn");
+      if (syncBtn) syncBtn.innerHTML = `<span class="animate-spin">⏳</span> Syncing...`;
+
+      const cfg = getConfig();
+      try {
+        const res = await fetch(cfg.workerUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.user) {
+          if (data.access_token) localStorage.setItem("tiktok_access_token", data.access_token);
+          if (data.refresh_token) localStorage.setItem("tiktok_refresh_token", data.refresh_token);
+          localStorage.setItem("tiktok_user_data", JSON.stringify(data.user));
+          localStorage.setItem("tiktok_video_list", JSON.stringify(data.videos || []));
+          localStorage.setItem("tiktok_last_sync", new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+          renderDashboard(data.user, data.videos || []);
+        } else if (res.status === 401 && isManual) {
+          alert("Sesi token telah berakhir. Mengarahkan ke login TikTok...");
+          connectTikTok();
+        }
+      } catch (err) {
+        console.error("Auto-sync error:", err);
+      } finally {
+        if (syncBtn) syncBtn.innerHTML = `<span>🔄 Sync Real-Time</span>`;
+      }
+    }
+
     async function checkAuthCallback() {
       const urlParams = new URLSearchParams(window.location.search);
       const authCode = urlParams.get("code");
@@ -286,9 +356,8 @@
       }
 
       if (authCode) {
-        // Bersihkan URL agar code tidak terpakai ulang
         window.history.replaceState({}, document.title, window.location.pathname);
-        updateStatusBanner("loading", "Menghubungkan ke TikTok API...", "Menukar kode otorisasi dan menarik data profil & video via Cloudflare Worker...");
+        updateStatusBanner("loading", "Menghubungkan ke TikTok API...", "Menukar kode otorisasi dan menarik seluruh katalog video via Cloudflare Worker...");
 
         const cfg = getConfig();
         try {
@@ -304,8 +373,11 @@
           const data = await response.json();
 
           if (data.success && data.user) {
+            if (data.access_token) localStorage.setItem("tiktok_access_token", data.access_token);
+            if (data.refresh_token) localStorage.setItem("tiktok_refresh_token", data.refresh_token);
             localStorage.setItem("tiktok_user_data", JSON.stringify(data.user));
             localStorage.setItem("tiktok_video_list", JSON.stringify(data.videos || []));
+            localStorage.setItem("tiktok_last_sync", new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
             renderDashboard(data.user, data.videos || []);
           } else {
             const errMsg = data.details?.error_description || data.details?.message || data.error || "Gagal mengambil data dari TikTok.";
@@ -315,13 +387,14 @@
           updateStatusBanner("error", "Koneksi ke Cloudflare Worker Gagal", err.message);
         }
       } else {
-        // Muat data tersimpan dari LocalStorage jika ada
         const savedUser = JSON.parse(localStorage.getItem("tiktok_user_data") || "null");
         const savedVideos = JSON.parse(localStorage.getItem("tiktok_video_list") || "[]");
         if (savedUser) {
           renderDashboard(savedUser, savedVideos);
+          // Otomatis tarik pembaruan real-time di latar belakang saat halaman dibuka
+          syncRealTimeData(false);
         } else {
-          renderChart([]);
+          renderCharts({}, {});
         }
       }
     }
@@ -332,6 +405,8 @@
       const titleEl = document.getElementById("statusTitle");
       const descEl = document.getElementById("statusDesc");
       const avatarEl = document.getElementById("userAvatar");
+      const syncBtn = document.getElementById("syncBtn");
+      const lastSyncEl = document.getElementById("lastSyncText");
 
       titleEl.textContent = title;
       descEl.textContent = desc;
@@ -343,12 +418,15 @@
         avatarEl.classList.add("hidden");
       }
 
-      banner.className = "glass-card rounded-xl p-4 flex items-center justify-between border-l-4 ";
+      banner.className = "glass-card rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-l-4 ";
       if (type === "connected") {
         banner.classList.add("border-l-emerald-500");
         titleEl.className = "text-sm font-semibold text-emerald-400";
         badge.className = "px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800";
-        badge.textContent = "Connected";
+        badge.textContent = "Live Connected";
+        syncBtn.classList.remove("hidden");
+        const lastSync = localStorage.getItem("tiktok_last_sync");
+        if (lastSync) lastSyncEl.textContent = `Update terakhir: ${lastSync} WIB`;
       } else if (type === "loading") {
         banner.classList.add("border-l-amber-500");
         titleEl.className = "text-sm font-semibold text-amber-400";
@@ -362,80 +440,66 @@
       }
     }
 
-    // 3. Render Seluruh Data ke UI Dashboard
     function renderDashboard(user, videos) {
       updateStatusBanner(
         "connected",
         `Terhubung: ${user.display_name || "Creator"}`,
-        `Total Video: ${(user.video_count || videos.length).toLocaleString("id-ID")} • Total Likes Akun: ${(user.likes_count || 0).toLocaleString("id-ID")}`,
+        `Total Video Akun: ${(user.video_count || videos.length).toLocaleString("id-ID")} • Video Dianalisis: ${videos.length} • Total Likes: ${(user.likes_count || 0).toLocaleString("id-ID")}`,
         user.avatar_url || ""
       );
 
       document.getElementById("kpiFollowers").textContent = (user.follower_count || 0).toLocaleString("id-ID");
       document.getElementById("kpiTotalLikes").textContent = `${(user.likes_count || 0).toLocaleString("id-ID")} Likes`;
-      document.getElementById("videoCountBadge").textContent = `${videos.length} Video`;
 
-      // Hitung Engagement Rate & Jam Terbaik
       let totalViews = 0;
       let totalEngagements = 0;
       const hourStats = {};
+      const durationStats = {
+        "< 10 dtk": { totalViews: 0, count: 0 },
+        "10–20 dtk": { totalViews: 0, count: 0 },
+        "21–40 dtk": { totalViews: 0, count: 0 },
+        "> 40 dtk": { totalViews: 0, count: 0 }
+      };
 
-      const tbody = document.getElementById("videoTableBody");
-      if (videos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-zinc-500">Akun terhubung, namun belum ada video publik yang ditemukan.</td></tr>`;
-      } else {
-        tbody.innerHTML = "";
-        videos.forEach(v => {
-          const views = v.view_count || 0;
-          const likes = v.like_count || 0;
-          const comments = v.comment_count || 0;
-          const shares = v.share_count || 0;
-          const eng = likes + comments + shares;
-          const er = views > 0 ? ((eng / views) * 100).toFixed(2) : "0.00";
+      videos.forEach(v => {
+        const views = v.view_count || 0;
+        const likes = v.like_count || 0;
+        const comments = v.comment_count || 0;
+        const shares = v.share_count || 0;
+        const dur = v.duration || 0;
 
-          totalViews += views;
-          totalEngagements += eng;
+        totalViews += views;
+        totalEngagements += (likes + comments + shares);
 
-          const dateObj = v.create_time ? new Date(v.create_time * 1000) : new Date();
-          const hour = dateObj.getHours();
-          if (!hourStats[hour]) hourStats[hour] = { totalViews: 0, count: 0 };
-          hourStats[hour].totalViews += views;
-          hourStats[hour].count += 1;
+        const dateObj = v.create_time ? new Date(v.create_time * 1000) : new Date();
+        const hour = dateObj.getHours();
+        if (!hourStats[hour]) hourStats[hour] = { totalViews: 0, count: 0 };
+        hourStats[hour].totalViews += views;
+        hourStats[hour].count += 1;
 
-          const dateStr = dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-          const titleText = v.title || v.video_description || "Video Tanpa Judul";
+        let bucket = "> 40 dtk";
+        if (dur < 10) bucket = "< 10 dtk";
+        else if (dur <= 20) bucket = "10–20 dtk";
+        else if (dur <= 40) bucket = "21–40 dtk";
+        durationStats[bucket].totalViews += views;
+        durationStats[bucket].count += 1;
+      });
 
-          tbody.innerHTML += `
-            <tr class="hover:bg-zinc-900/50 transition">
-              <td class="py-3 px-4 max-w-xs">
-                <div class="flex items-center gap-3">
-                  ${v.cover_image_url ? `<img src="${v.cover_image_url}" class="w-9 h-12 rounded object-cover bg-zinc-800 shrink-0">` : ""}
-                  <a href="${v.share_url || "#"}" target="_blank" class="font-medium text-zinc-200 hover:text-rose-400 line-clamp-2">${titleText}</a>
-                </div>
-              </td>
-              <td class="py-3 px-4 text-zinc-400 whitespace-nowrap">${dateStr}</td>
-              <td class="py-3 px-4 text-right font-semibold text-white">${views.toLocaleString("id-ID")}</td>
-              <td class="py-3 px-4 text-right text-zinc-300">${likes.toLocaleString("id-ID")}</td>
-              <td class="py-3 px-4 text-right text-zinc-300">${comments.toLocaleString("id-ID")}</td>
-              <td class="py-3 px-4 text-right text-zinc-300">${shares.toLocaleString("id-ID")}</td>
-              <td class="py-3 px-4 text-right font-bold ${parseFloat(er) >= 5 ? "text-emerald-400" : "text-amber-400"}">${er}%</td>
-            </tr>
-          `;
-        });
-      }
+      const avgViews = videos.length > 0 ? Math.round(totalViews / videos.length) : 0;
+      document.getElementById("kpiAvgViews").textContent = avgViews.toLocaleString("id-ID");
+      document.getElementById("kpiTotalViews").textContent = `${totalViews.toLocaleString("id-ID")} Total`;
 
       const avgER = totalViews > 0 ? ((totalEngagements / totalViews) * 100).toFixed(2) : "0.0";
       document.getElementById("kpiER").textContent = `${avgER}%`;
       const erStatusEl = document.getElementById("kpiERStatus");
       if (parseFloat(avgER) >= 5) {
         erStatusEl.textContent = "Sangat Sehat";
-        erStatusEl.className = "text-xs px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400";
+        erStatusEl.className = "text-[11px] px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400";
       } else if (videos.length > 0) {
         erStatusEl.textContent = "Perlu Hook Kuat";
-        erStatusEl.className = "text-xs px-2 py-0.5 rounded bg-amber-950/60 text-amber-400";
+        erStatusEl.className = "text-[11px] px-2 py-0.5 rounded bg-amber-950/60 text-amber-400";
       }
 
-      // Tentukan Jam Optimal
       let bestHour = null;
       let maxAvgViews = -1;
       Object.keys(hourStats).forEach(h => {
@@ -445,36 +509,123 @@
           bestHour = h;
         }
       });
-
       if (bestHour !== null) {
         document.getElementById("kpiBestHour").textContent = `${String(bestHour).padStart(2, "0")}:00 WIB`;
       }
 
-      renderChart(hourStats);
-      runAIAudit();
+      applyVideoFilter();
+      renderCharts(hourStats, durationStats);
+      runAIAudit(false);
     }
 
-    function renderChart(hourStats) {
-      const ctx = document.getElementById("hourlyChart").getContext("2d");
-      if (hourlyChartInstance) hourlyChartInstance.destroy();
+    function applyVideoFilter() {
+      const videos = JSON.parse(localStorage.getItem("tiktok_video_list") || "[]");
+      const query = (document.getElementById("videoSearchInput")?.value || "").toLowerCase();
+      const sortBy = document.getElementById("videoSortSelect")?.value || "newest";
 
-      const labels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
-      const dataPoints = labels.map((_, i) => {
-        if (hourStats[i]) return Math.round(hourStats[i].totalViews / hourStats[i].count);
-        return 0;
+      let filtered = videos.filter(v => {
+        const text = `${v.title || ""} ${v.video_description || ""}`.toLowerCase();
+        return text.includes(query);
       });
 
-      hourlyChartInstance = new Chart(ctx, {
+      filtered.sort((a, b) => {
+        if (sortBy === "views") return (b.view_count || 0) - (a.view_count || 0);
+        if (sortBy === "likes") return (b.like_count || 0) - (a.like_count || 0);
+        if (sortBy === "comments") return (b.comment_count || 0) - (a.comment_count || 0);
+        if (sortBy === "er") {
+          const erA = a.view_count > 0 ? ((a.like_count + a.comment_count + a.share_count) / a.view_count) : 0;
+          const erB = b.view_count > 0 ? ((b.like_count + b.comment_count + b.share_count) / b.view_count) : 0;
+          return erB - erA;
+        }
+        return (b.create_time || 0) - (a.create_time || 0);
+      });
+
+      document.getElementById("videoCountBadge").textContent = `${filtered.length} Video`;
+      const tbody = document.getElementById("videoTableBody");
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-zinc-500">Tidak ada video yang sesuai dengan filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(v => {
+        const views = v.view_count || 0;
+        const likes = v.like_count || 0;
+        const comments = v.comment_count || 0;
+        const shares = v.share_count || 0;
+        const er = views > 0 ? (((likes + comments + shares) / views) * 100).toFixed(2) : "0.00";
+        const dateObj = v.create_time ? new Date(v.create_time * 1000) : new Date();
+        const dateStr = dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        const titleText = v.title || v.video_description || "Video Tanpa Judul";
+
+        return `
+          <tr class="hover:bg-zinc-900/50 transition">
+            <td class="py-3 px-4 max-w-xs">
+              <div class="flex items-center gap-3">
+                ${v.cover_image_url ? `<img src="${v.cover_image_url}" class="w-9 h-12 rounded object-cover bg-zinc-800 shrink-0">` : ""}
+                <a href="${v.share_url || "#"}" target="_blank" class="font-medium text-zinc-200 hover:text-rose-400 line-clamp-2">${titleText}</a>
+              </div>
+            </td>
+            <td class="py-3 px-4 text-zinc-400 whitespace-nowrap">${dateStr}</td>
+            <td class="py-3 px-4 text-right text-zinc-400 whitespace-nowrap">${v.duration || 0} dtk</td>
+            <td class="py-3 px-4 text-right font-semibold text-white">${views.toLocaleString("id-ID")}</td>
+            <td class="py-3 px-4 text-right text-zinc-300">${likes.toLocaleString("id-ID")}</td>
+            <td class="py-3 px-4 text-right text-zinc-300">${comments.toLocaleString("id-ID")}</td>
+            <td class="py-3 px-4 text-right text-zinc-300">${shares.toLocaleString("id-ID")}</td>
+            <td class="py-3 px-4 text-right font-bold ${parseFloat(er) >= 5 ? "text-emerald-400" : "text-amber-400"}">${er}%</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderCharts(hourStats, durationStats) {
+      const ctxHour = document.getElementById("hourlyChart").getContext("2d");
+      if (hourlyChartInstance) hourlyChartInstance.destroy();
+
+      const hourLabels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
+      const hourData = hourLabels.map((_, i) => hourStats[i] ? Math.round(hourStats[i].totalViews / hourStats[i].count) : 0);
+
+      hourlyChartInstance = new Chart(ctxHour, {
         type: "bar",
         data: {
-          labels,
+          labels: hourLabels,
           datasets: [{
             label: "Rata-rata Views",
-            data: dataPoints,
-            backgroundColor: "rgba(244, 63, 94, 0.7)",
+            data: hourData,
+            backgroundColor: "rgba(244, 63, 94, 0.75)",
             borderColor: "#f43f5e",
             borderWidth: 1,
             borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "#a1a1aa", font: { size: 9 } }, grid: { display: false } },
+            y: { ticks: { color: "#a1a1aa", font: { size: 10 } }, grid: { color: "rgba(63,63,70,0.3)" } }
+          }
+        }
+      });
+
+      const ctxDur = document.getElementById("durationChart").getContext("2d");
+      if (durationChartInstance) durationChartInstance.destroy();
+
+      const durLabels = Object.keys(durationStats);
+      const durData = durLabels.map(k => durationStats[k].count > 0 ? Math.round(durationStats[k].totalViews / durationStats[k].count) : 0);
+
+      durationChartInstance = new Chart(ctxDur, {
+        type: "bar",
+        data: {
+          labels: durLabels,
+          datasets: [{
+            label: "Rata-rata Views",
+            data: durData,
+            backgroundColor: "rgba(6, 182, 212, 0.75)",
+            borderColor: "#06b6d4",
+            borderWidth: 1,
+            borderRadius: 6
           }]
         },
         options: {
@@ -489,30 +640,75 @@
       });
     }
 
-    // 4. AI Content Auditor
-    function runAIAudit() {
+    // AI Content Auditor (Terhubung langsung ke Gemini API jika key diisi)
+    async function runAIAudit(useGemini = false) {
       const videos = JSON.parse(localStorage.getItem("tiktok_video_list") || "[]");
+      const user = JSON.parse(localStorage.getItem("tiktok_user_data") || "{}");
       const weakEl = document.getElementById("auditWeaknesses");
       const actEl = document.getElementById("auditActions");
+      const auditBtn = document.getElementById("auditBtn");
+      const cfg = getConfig();
 
       if (videos.length === 0) return;
 
-      const avgViews = videos.reduce((acc, v) => acc + (v.view_count || 0), 0) / videos.length;
-      const lowViewsCount = videos.filter(v => (v.view_count || 0) < 500).length;
+      const sortedByViews = [...videos].sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
+      const topVideos = sortedByViews.slice(0, 5);
+      const avgViews = Math.round(videos.reduce((acc, v) => acc + (v.view_count || 0), 0) / videos.length);
       const bestHourText = document.getElementById("kpiBestHour").textContent;
 
+      // Fallback aturan lokal cepat
       weakEl.innerHTML = `
-        <li>Rata-rata views saat ini <strong>${Math.round(avgViews).toLocaleString("id-ID")} views/video</strong> (${lowViewsCount} dari ${videos.length} video tertahan di bawah 500 views).</li>
-        <li>Rasio komentar & share perlu didorong untuk memicu distribusi FYP gelombang kedua.</li>
+        <li>Rasio views terhadap followers masih rendah (<strong>${avgViews.toLocaleString("id-ID")} views/video</strong> dari ${(user.follower_count || 0).toLocaleString("id-ID")} followers) — indikasi hook 2 detik pertama belum menahan scroll audiens baru.</li>
+        <li>Video terbaikmu meraih <strong>${(topVideos[0]?.view_count || 0).toLocaleString("id-ID")} views</strong>, namun pola struktur hook tersebut belum direplikasi secara konsisten.</li>
+      `;
+      actEl.innerHTML = `
+        <li>Upload konten utama tepat 15–30 menit sebelum <strong>${bestHourText}</strong>.</li>
+        <li>Ubah format pembuka: langsung tunjukkan hasil pemakaian outfit/produk di detik ke-0 tanpa intro sapaan, dan sisipkan pertanyaan pilihan (A vs B) di caption.</li>
       `;
 
-      actEl.innerHTML = `
-        <li>Jadwalkan upload utama mendekati <strong>${bestHourText}</strong> berdasarkan puncak trafik historis akunmu.</li>
-        <li>Gunakan visual hook produk di 2 detik pertama dan tambahkan CTA pertanyaan singkat di caption untuk memancing komentar.</li>
-      `;
+      // Jika user menekan tombol Audit AI dan memiliki Gemini API Key
+      if (useGemini && cfg.geminiKey) {
+        auditBtn.textContent = "⏳ Menganalisis via Gemini...";
+        auditBtn.disabled = true;
+
+        const summaryTop = topVideos.map(v => `- "${(v.title || v.video_description || "").slice(0, 80)}" (${v.view_count} views, ${v.like_count} likes, ${v.duration} dtk)`).join("\n");
+        const prompt = `Kamu adalah konsultan strategi TikTok Fashion Affiliate. Analisis data akun "${user.display_name}" (${user.follower_count} followers, rata-rata ${avgViews} views/video, jam puncak ${bestHourText}).
+Top 5 video terbaik:
+${summaryTop}
+
+Berikan respon JSON murni tanpa markdown dengan format:
+{"weaknesses": ["poin evaluasi 1", "poin evaluasi 2"], "actions": ["action plan & ide hook spesifik 1", "action plan & ide hook spesifik 2", "ide skrip singkat 3"]}`;
+
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(cfg.geminiKey)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          const aiData = await res.json();
+          const rawText = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          const cleanJson = rawText.replace(/```json|```/g, "").trim();
+          const parsed = JSON.parse(cleanJson);
+
+          if (parsed.weaknesses) {
+            weakEl.innerHTML = parsed.weaknesses.map(w => `<li>${w}</li>`).join("");
+          }
+          if (parsed.actions) {
+            actEl.innerHTML = parsed.actions.map(a => `<li>${a}</li>`).join("");
+          }
+          document.getElementById("aiModeSubtitle").textContent = "✨ Dianalisis langsung oleh Gemini AI berdasarkan riwayat video akunmu.";
+        } catch (e) {
+          console.error("Gemini AI error:", e);
+          alert("Gagal memanggil Gemini API. Pastikan Gemini API Key di ⚙️ API & Config sudah benar.");
+        } finally {
+          auditBtn.textContent = "⚡ Jalankan Audit AI";
+          auditBtn.disabled = false;
+        }
+      } else if (useGemini && !cfg.geminiKey) {
+        alert("Masukkan Gemini API Key di tombol ⚙️ API & Config terlebih dahulu untuk mengaktifkan analisis AI mendalam!");
+      }
     }
 
-    // 5. Upload CSV TikTok Affiliate
     function handleCSVUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -536,7 +732,6 @@
       });
     }
 
-    // 6. Backup & Restore JSON
     function exportBackupJSON() {
       const payload = {
         user: JSON.parse(localStorage.getItem("tiktok_user_data") || "null"),
@@ -573,7 +768,13 @@
       reader.readAsText(file);
     }
 
-    // Jalankan saat halaman dimuat
+    // Auto-polling real-time setiap 5 menit saat tab dashboard terbuka
+    setInterval(() => {
+      if (!document.hidden && localStorage.getItem("tiktok_access_token")) {
+        syncRealTimeData(false);
+      }
+    }, 300000);
+
     window.addEventListener("DOMContentLoaded", () => {
       const savedGMV = localStorage.getItem("tiktok_gmv_total");
       if (savedGMV) document.getElementById("kpiGMV").textContent = `Rp ${Number(savedGMV).toLocaleString("id-ID")}`;
