@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Creator Analytics Studio – TikTok Real-Time & Affiliate Intelligence</title>
+  <title>Creator Analytics Studio V.4.0 – TikTok Real-Time & Live Pulse</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -13,22 +13,23 @@
     .glass-card { background: rgba(24, 24, 27, 0.88); border: 1px solid rgba(63, 63, 70, 0.55); backdrop-filter: blur(14px); }
     .tiktok-gradient { background: linear-gradient(135deg, #00f2fe 0%, #fe2c55 100%); }
     @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
-    .live-dot { animation: pulse-dot 1.8s infinite ease-in-out; }
+    .live-dot { animation: pulse-dot 1.5s infinite ease-in-out; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20 sm:pb-8">
 
-  <!-- Top Navigation (Clean & Mobile Friendly) -->
+  <!-- Top Navigation -->
   <nav class="border-b border-zinc-800/90 bg-zinc-950/95 sticky top-0 z-40 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-8 h-8 rounded-lg tiktok-gradient flex items-center justify-center font-extrabold text-black shrink-0">C</div>
-        <div class="truncate">
-          <span class="font-bold text-sm sm:text-lg tracking-tight block truncate">Creator Analytics <span class="text-rose-500">Studio</span></span>
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="font-bold text-sm sm:text-lg tracking-tight truncate">Creator Analytics <span class="text-rose-500">Studio</span></span>
+          <span class="px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/40 text-[10px] font-extrabold text-rose-400 tracking-wide shrink-0">V.4.0</span>
         </div>
       </div>
 
-      <!-- Status Cloud & Desktop Actions -->
       <div class="flex items-center gap-2 shrink-0">
         <div id="cloudSyncIndicator" class="px-2.5 py-1 rounded-full bg-amber-950/60 border border-amber-800/60 text-[11px] font-medium text-amber-400 flex items-center gap-1.5">
           <span class="w-1.5 h-1.5 rounded-full bg-amber-400 live-dot"></span>
@@ -36,7 +37,7 @@
         </div>
 
         <button onclick="syncRealTimeData(true)" id="syncBtnDesktop" class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-semibold text-emerald-400 transition">
-          <span>🔄 Sync Live</span>
+          <span>🔄 Sync Now</span>
         </button>
         <button onclick="openConfigModal()" class="hidden sm:flex px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-200 transition">
           ⚙️ Config
@@ -65,7 +66,6 @@
         </div>
       </div>
 
-      <!-- Analysis Scope & Auto-Refresh Control -->
       <div class="flex items-center gap-2 flex-wrap pt-2 md:pt-0 border-t md:border-t-0 border-zinc-800/80">
         <div class="flex items-center gap-1.5 bg-zinc-950/90 border border-zinc-800 rounded-xl px-2.5 py-1.5">
           <span class="text-[11px] text-zinc-400">Rentang:</span>
@@ -76,52 +76,141 @@
           </select>
         </div>
 
-        <label class="flex items-center gap-1.5 bg-zinc-950/90 border border-zinc-800 rounded-xl px-2.5 py-1.5 cursor-pointer select-none">
-          <input type="checkbox" id="autoPollToggle" checked onchange="toggleAutoPoll()" class="accent-emerald-500 rounded">
-          <span class="text-[11px] font-medium text-zinc-300">Auto-Live (1m)</span>
-        </label>
+        <div class="flex items-center gap-1.5 bg-zinc-950/90 border border-zinc-800 rounded-xl px-2.5 py-1.5">
+          <input type="checkbox" id="autoPollToggle" checked onchange="toggleAutoPoll()" class="accent-emerald-500 rounded cursor-pointer">
+          <span class="text-[11px] text-zinc-300">Live Timer:</span>
+          <select id="pollIntervalSelect" onchange="toggleAutoPoll()" class="bg-transparent text-xs font-bold text-emerald-400 focus:outline-none">
+            <option value="30" class="bg-zinc-900">30 dtk</option>
+            <option value="60" selected class="bg-zinc-900">1 mnt</option>
+            <option value="180" class="bg-zinc-900">3 mnt</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <!-- KPI Cards (2 Columns on Mobile, 5 Columns on Desktop) -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+    <!-- V.4.0 FEATURE: REAL-TIME LIVE PULSE MONITOR (LIKES & VIEWS DELTA + COUNTDOWN TIMER) -->
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-rose-500/30 relative overflow-hidden">
+      <!-- Progress Bar Countdown -->
+      <div class="absolute top-0 left-0 right-0 h-1 bg-zinc-900">
+        <div id="liveTimerBar" class="h-full tiktok-gradient transition-all duration-1000 ease-linear" style="width: 100%;"></div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pt-1">
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500 live-dot"></span>
+              LIVE PULSE MONITOR
+            </span>
+            <h3 class="text-sm sm:text-base font-bold text-white">Detektor Kenaikan & Penurunan Likes / Views Real-Time</h3>
+          </div>
+          <p class="text-xs text-zinc-400 mt-0.5">Memantau perubahan angka likes, views, dan followers setiap siklus timer secara langsung.</p>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-center">
+          <div class="px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center gap-2">
+            <span class="text-[11px] text-zinc-400">Next scan:</span>
+            <span id="liveCountdownText" class="text-sm font-extrabold text-cyan-400 tabular-nums">01:00</span>
+          </div>
+          <button onclick="resetPulseBaseline()" title="Reset titik pembanding angka saat ini" class="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[11px] font-semibold text-zinc-300 transition">
+            ↺ Reset Baseline
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Counters Grid -->
+      <div class="grid grid-cols-3 gap-2.5 sm:gap-4 mb-4">
+        <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl p-3.5">
+          <div class="text-[11px] text-zinc-400 font-medium">Total Likes Akun</div>
+          <div id="liveTotalLikesVal" class="text-lg sm:text-2xl font-extrabold text-white tabular-nums mt-1">0</div>
+          <div id="liveLikesDelta" class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-900 text-zinc-400 tabular-nums">
+            0 (Stabil)
+          </div>
+        </div>
+
+        <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl p-3.5">
+          <div class="text-[11px] text-zinc-400 font-medium">Total Views Katalog</div>
+          <div id="liveTotalViewsVal" class="text-lg sm:text-2xl font-extrabold text-white tabular-nums mt-1">0</div>
+          <div id="liveViewsDelta" class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-900 text-zinc-400 tabular-nums">
+            0 (Stabil)
+          </div>
+        </div>
+
+        <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl p-3.5">
+          <div class="text-[11px] text-zinc-400 font-medium">Total Followers</div>
+          <div id="liveFollowersVal" class="text-lg sm:text-2xl font-extrabold text-white tabular-nums mt-1">0</div>
+          <div id="liveFollowersDelta" class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-900 text-zinc-400 tabular-nums">
+            0 (Stabil)
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Live Delta Ticker -->
+      <div class="bg-zinc-950/75 border border-zinc-800/80 rounded-xl p-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Log Pergerakan Likes Video Real-Time</span>
+          <span id="liveBaselineTime" class="text-[10px] text-zinc-500">Baseline aktif</span>
+        </div>
+        <div id="liveVideoDeltaList" class="space-y-1.5 text-xs max-h-36 overflow-y-auto">
+          <div class="text-zinc-500 text-[11px]">Menunggu pembaruan siklus berikutnya untuk mendeteksi selisih likes per video...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards (4 Utama) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <div class="glass-card rounded-2xl p-4">
         <div class="text-[11px] sm:text-xs text-zinc-400 font-medium">Total Followers</div>
         <div class="mt-1.5 flex items-baseline justify-between gap-1 flex-wrap">
-          <span id="kpiFollowers" class="text-xl sm:text-2xl font-extrabold text-white">0</span>
-          <span id="kpiTotalLikes" class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">0 Likes</span>
+          <span id="kpiFollowers" class="text-xl sm:text-2xl font-extrabold text-white tabular-nums">0</span>
+          <span id="kpiTotalLikes" class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 tabular-nums">0 Likes</span>
         </div>
       </div>
 
       <div class="glass-card rounded-2xl p-4">
         <div class="text-[11px] sm:text-xs text-zinc-400 font-medium">Rata-rata Views</div>
         <div class="mt-1.5 flex items-baseline justify-between gap-1 flex-wrap">
-          <span id="kpiAvgViews" class="text-xl sm:text-2xl font-extrabold text-white">0</span>
-          <span id="kpiTotalViews" class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">0 Total</span>
+          <span id="kpiAvgViews" class="text-xl sm:text-2xl font-extrabold text-white tabular-nums">0</span>
+          <span id="kpiTotalViews" class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 tabular-nums">0 Total</span>
         </div>
       </div>
 
       <div class="glass-card rounded-2xl p-4">
         <div class="text-[11px] sm:text-xs text-zinc-400 font-medium">Engagement Rate</div>
         <div class="mt-1.5 flex items-baseline justify-between gap-1 flex-wrap">
-          <span id="kpiER" class="text-xl sm:text-2xl font-extrabold text-white">0.0%</span>
+          <span id="kpiER" class="text-xl sm:text-2xl font-extrabold text-white tabular-nums">0.0%</span>
           <span id="kpiERStatus" class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-400">-</span>
         </div>
       </div>
 
       <div class="glass-card rounded-2xl p-4">
-        <div class="text-[11px] sm:text-xs text-zinc-400 font-medium">Peak Hour (Rentang)</div>
-        <div class="mt-1.5 flex items-baseline justify-between gap-1 flex-wrap">
-          <span id="kpiBestHour" class="text-xl sm:text-2xl font-extrabold text-cyan-400">--:--</span>
-          <span id="kpiRecentHourBadge" class="text-[10px] px-1.5 py-0.5 rounded-md bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">Tren: --:--</span>
-        </div>
-      </div>
-
-      <div class="glass-card rounded-2xl p-4 col-span-2 lg:col-span-1">
         <div class="text-[11px] sm:text-xs text-zinc-400 font-medium">Estimasi GMV & Komisi</div>
         <div class="mt-1.5 flex items-baseline justify-between gap-1 flex-wrap">
-          <span id="kpiGMV" class="text-xl sm:text-2xl font-extrabold text-emerald-400">Rp 0</span>
-          <span id="kpiEstCommission" class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">Komisi: Rp 0</span>
+          <span id="kpiGMV" class="text-xl sm:text-2xl font-extrabold text-emerald-400 tabular-nums">Rp 0</span>
+          <span id="kpiEstCommission" class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-emerald-950/70 text-emerald-300 border border-emerald-800/50 tabular-nums">Komisi: Rp 0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP 3 JAM POTENSIAL & ACTIVE AUDIENCE PULSE -->
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-cyan-500/25 space-y-4">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Smart Schedule & Audience</span>
+          <h3 class="text-sm sm:text-base font-bold text-white">Top 3 Jam Potensial & Rekomendasi Waktu Upload</h3>
+        </div>
+        <p class="text-xs text-zinc-400 mt-0.5">Dihitung real-time dari kombinasi views tertinggi & intensitas interaksi audience aktif.</p>
+      </div>
+
+      <div id="top3HoursContainer" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="bg-zinc-950/80 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-500 text-center">Memuat data jam potensial...</div>
+      </div>
+
+      <!-- Active Audience Segment Bar -->
+      <div class="pt-3 border-t border-zinc-800/80">
+        <div class="text-xs font-bold text-zinc-200 mb-2">👥 Konsentrasi Audience Aktif Berdasarkan Segmen Waktu (WIB)</div>
+        <div id="audienceSegmentsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+          <div class="bg-zinc-950/70 rounded-xl p-3 border border-zinc-800/70 text-zinc-500">Menghitung segmen...</div>
         </div>
       </div>
     </div>
@@ -157,14 +246,12 @@
       </div>
     </div>
 
-    <!-- Top Winning Keywords / Hashtags & Winning Videos -->
+    <!-- Top Winning Videos & Keywords -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       <div class="glass-card rounded-2xl p-4 sm:p-5">
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <h3 class="text-sm font-bold text-white">🏆 Top 3 Video Paling Viral (Winning Content)</h3>
-            <p class="text-xs text-zinc-400">Pola konten dengan views tertinggi di rentang pilihan.</p>
-          </div>
+        <div class="mb-3">
+          <h3 class="text-sm font-bold text-white">🏆 Top 3 Video Paling Viral (Winning Content)</h3>
+          <p class="text-xs text-zinc-400">Pola konten dengan views tertinggi di rentang pilihan.</p>
         </div>
         <div id="topWinningList" class="space-y-2.5 text-xs">
           <div class="text-zinc-500 py-4 text-center">Belum ada data video.</div>
@@ -172,11 +259,9 @@
       </div>
 
       <div class="glass-card rounded-2xl p-4 sm:p-5">
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <h3 class="text-sm font-bold text-white">🏷️ Keyword & Hashtag Performa Tertinggi</h3>
-            <p class="text-xs text-zinc-400">Kata kunci di caption yang menghasilkan rata-rata views terbaik.</p>
-          </div>
+        <div class="mb-3">
+          <h3 class="text-sm font-bold text-white">🏷️ Keyword & Hashtag Performa Tertinggi</h3>
+          <p class="text-xs text-zinc-400">Kata kunci di caption yang menghasilkan rata-rata views terbaik.</p>
         </div>
         <div id="topKeywordsList" class="flex flex-wrap gap-2">
           <span class="text-xs text-zinc-500">Menganalisis caption video...</span>
@@ -228,8 +313,8 @@
     <div class="glass-card rounded-2xl overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 class="text-sm sm:text-base font-bold text-white">Katalog Performa Video</h3>
-          <p class="text-xs text-zinc-400">Dilengkapi status performa algoritma (Viral / Normal / Stagnan).</p>
+          <h3 class="text-sm sm:text-base font-bold text-white">Katalog Performa Video (Real-Time Delta)</h3>
+          <p class="text-xs text-zinc-400">Menampilkan status algoritma beserta perubahan likes/views real-time per video.</p>
         </div>
         <div class="grid grid-cols-2 sm:flex items-center gap-2">
           <input type="text" id="videoSearchInput" oninput="applyVideoFilter()" placeholder="Cari produk / caption..." class="col-span-2 sm:w-48 px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
@@ -244,12 +329,12 @@
         </div>
       </div>
 
-      <!-- Mobile Card List (Visible only on < 640px) -->
+      <!-- Mobile Card List -->
       <div id="mobileVideoCards" class="sm:hidden divide-y divide-zinc-800/80 max-h-[600px] overflow-y-auto">
         <div class="p-6 text-center text-xs text-zinc-500">Memuat katalog video...</div>
       </div>
 
-      <!-- Desktop Table (Visible on >= 640px) -->
+      <!-- Desktop Table -->
       <div class="hidden sm:block overflow-x-auto max-h-[560px] overflow-y-auto">
         <table class="w-full text-left border-collapse">
           <thead class="sticky top-0 bg-zinc-950 z-10">
@@ -259,7 +344,7 @@
               <th class="py-3 px-4">Waktu Upload</th>
               <th class="py-3 px-4 text-right">Durasi</th>
               <th class="py-3 px-4 text-right">Views</th>
-              <th class="py-3 px-4 text-right">Likes</th>
+              <th class="py-3 px-4 text-right">Likes (Live)</th>
               <th class="py-3 px-4 text-right">Komen</th>
               <th class="py-3 px-4 text-right">Share</th>
               <th class="py-3 px-4 text-right">ER %</th>
@@ -276,10 +361,10 @@
 
   </main>
 
-  <!-- Sticky Bottom Bar for Mobile Devices -->
+  <!-- Sticky Bottom Bar for Mobile -->
   <div class="sm:hidden fixed bottom-0 inset-x-0 bg-zinc-950/95 border-t border-zinc-800 backdrop-blur-lg z-40 px-3 py-2 grid grid-cols-3 gap-2">
     <button onclick="syncRealTimeData(true)" id="syncBtnMobile" class="py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-xs font-bold text-emerald-400 flex items-center justify-center gap-1">
-      <span>🔄 Sync Live</span>
+      <span>🔄 Sync Now</span>
     </button>
     <button onclick="openConfigModal()" class="py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-semibold text-zinc-200 flex items-center justify-center gap-1">
       <span>⚙️ Config</span>
@@ -293,7 +378,7 @@
   <div id="configModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl">
       <div>
-        <h3 class="text-base font-bold text-white">Konfigurasi Cloud (Tersimpan di Firebase)</h3>
+        <h3 class="text-base font-bold text-white">Konfigurasi Cloud V.4.0 (Firebase Sync)</h3>
         <p class="text-xs text-zinc-400 mt-1">Perubahan di sini otomatis tersinkronisasi antara PC dan HP.</p>
       </div>
 
@@ -359,9 +444,116 @@
       aiAudit: null
     };
 
+    // Baseline in-memory untuk melacak kenaikan/penurunan real-time setiap siklus timer
+    let pulseBaseline = null;
+    let videoDeltaMap = {};
     let hourlyChartInstance = null;
     let durationChartInstance = null;
-    let autoPollTimer = null;
+    let countdownTimer = null;
+    let secondsRemaining = 60;
+    let totalIntervalSeconds = 60;
+
+    function formatDeltaBadge(elId, diff) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      if (diff > 0) {
+        el.className = "mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 tabular-nums";
+        el.textContent = `▲ +${diff.toLocaleString("id-ID")}`;
+      } else if (diff < 0) {
+        el.className = "mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/30 tabular-nums";
+        el.textContent = `▼ ${diff.toLocaleString("id-ID")}`;
+      } else {
+        el.className = "mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-900 text-zinc-400 tabular-nums";
+        el.textContent = `• 0 (Stabil)`;
+      }
+    }
+
+    function updateLivePulseMonitor(user, videos) {
+      if (!user) return;
+      const currentLikes = user.likes_count || 0;
+      const currentFollowers = user.follower_count || 0;
+      const currentViews = videos.reduce((sum, v) => sum + (v.view_count || 0), 0);
+
+      document.getElementById("liveTotalLikesVal").textContent = currentLikes.toLocaleString("id-ID");
+      document.getElementById("liveTotalViewsVal").textContent = currentViews.toLocaleString("id-ID");
+      document.getElementById("liveFollowersVal").textContent = currentFollowers.toLocaleString("id-ID");
+
+      if (!pulseBaseline) {
+        const videoMap = {};
+        videos.forEach(v => {
+          videoMap[v.id] = { likes: v.like_count || 0, views: v.view_count || 0 };
+        });
+        pulseBaseline = {
+          likes: currentLikes,
+          views: currentViews,
+          followers: currentFollowers,
+          videos: videoMap,
+          time: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+        };
+        document.getElementById("liveBaselineTime").textContent = `Baseline: ${pulseBaseline.time} WIB`;
+      }
+
+      const likesDiff = currentLikes - pulseBaseline.likes;
+      const viewsDiff = currentViews - pulseBaseline.views;
+      const followersDiff = currentFollowers - pulseBaseline.followers;
+
+      formatDeltaBadge("liveLikesDelta", likesDiff);
+      formatDeltaBadge("liveViewsDelta", viewsDiff);
+      formatDeltaBadge("liveFollowersDelta", followersDiff);
+
+      // Hitung perubahan per video
+      const changedVideos = [];
+      videoDeltaMap = {};
+
+      videos.forEach(v => {
+        const prev = pulseBaseline.videos[v.id];
+        if (prev) {
+          const dLikes = (v.like_count || 0) - prev.likes;
+          const dViews = (v.view_count || 0) - prev.views;
+          videoDeltaMap[v.id] = { dLikes, dViews };
+          if (dLikes !== 0 || dViews !== 0) {
+            changedVideos.push({
+              title: v.title || v.video_description || "Video Tanpa Judul",
+              dLikes,
+              dViews,
+              currentLikes: v.like_count || 0
+            });
+          }
+        }
+      });
+
+      const listEl = document.getElementById("liveVideoDeltaList");
+      if (changedVideos.length === 0) {
+        listEl.innerHTML = `<div class="text-zinc-500 text-[11px]">Belum ada perubahan angka sejak baseline pukul ${pulseBaseline.time} WIB. Pantau terus saat timer berdetak...</div>`;
+      } else {
+        listEl.innerHTML = changedVideos.map(item => {
+          const likeBadge = item.dLikes > 0
+            ? `<span class="text-emerald-400 font-bold">+${item.dLikes} Likes</span>`
+            : (item.dLikes < 0 ? `<span class="text-rose-400 font-bold">${item.dLikes} Likes</span>` : `<span class="text-zinc-400">0 Likes</span>`);
+          const viewBadge = item.dViews > 0
+            ? `<span class="text-cyan-400 font-bold">+${item.dViews} Views</span>`
+            : (item.dViews < 0 ? `<span class="text-rose-400 font-bold">${item.dViews} Views</span>` : ``);
+          return `
+            <div class="flex items-center justify-between gap-2 bg-zinc-900/90 px-2.5 py-1.5 rounded-lg border border-zinc-800">
+              <span class="text-zinc-200 truncate max-w-[55%]">${item.title}</span>
+              <div class="flex items-center gap-2 shrink-0 tabular-nums text-[11px]">
+                ${likeBadge}
+                ${viewBadge}
+                <span class="text-zinc-500">(${item.currentLikes.toLocaleString("id-ID")})</span>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    window.resetPulseBaseline = function() {
+      pulseBaseline = null;
+      if (cloudState.user) {
+        updateLivePulseMonitor(cloudState.user, cloudState.videos || []);
+        window.applyVideoFilter();
+      }
+    };
 
     function setCloudIndicator(status, text) {
       const el = document.getElementById("cloudSyncIndicator");
@@ -382,7 +574,7 @@
       setCloudIndicator("saving", "Syncing...");
       try {
         await setDoc(STUDIO_DOC_REF, partialData, { merge: true });
-        setCloudIndicator("synced", "Live Cloud");
+        setCloudIndicator("synced", "V.4.0 Live");
       } catch (err) {
         console.error("Firestore save error:", err);
         setCloudIndicator("error", "Cloud Error");
@@ -390,7 +582,7 @@
     }
 
     onSnapshot(STUDIO_DOC_REF, (snapshot) => {
-      setCloudIndicator("synced", "Live Cloud");
+      setCloudIndicator("synced", "V.4.0 Live");
       if (snapshot.exists()) {
         const data = snapshot.data();
         cloudState = {
@@ -411,7 +603,7 @@
         if (cloudState.user) {
           window.recalculateAll();
         } else {
-          updateStatusBanner("offline", "Firebase Terhubung – Siap Sinkronisasi", "Klik 'Connect TikTok' di PC satu kali untuk mengisi data ke Cloud.");
+          updateStatusBanner("offline", "Firebase V.4.0 Terhubung", "Klik 'Connect TikTok' di PC satu kali untuk mulai memantau real-time.");
           renderCharts({}, {});
         }
       } else {
@@ -464,8 +656,8 @@
 
       const btnD = document.getElementById("syncBtnDesktop");
       const btnM = document.getElementById("syncBtnMobile");
-      if (btnD) btnD.innerHTML = `<span>⏳ Syncing...</span>`;
-      if (btnM) btnM.innerHTML = `<span>⏳ Syncing...</span>`;
+      if (btnD) btnD.innerHTML = `<span>⏳ Scanning...</span>`;
+      if (btnM) btnM.innerHTML = `<span>⏳ Scanning...</span>`;
 
       const cfg = cloudState.config;
       try {
@@ -494,8 +686,9 @@
       } catch (err) {
         console.error("Sync error:", err);
       } finally {
-        if (btnD) btnD.innerHTML = `<span>🔄 Sync Live</span>`;
-        if (btnM) btnM.innerHTML = `<span>🔄 Sync Live</span>`;
+        if (btnD) btnD.innerHTML = `<span>🔄 Sync Now</span>`;
+        if (btnM) btnM.innerHTML = `<span>🔄 Sync Now</span>`;
+        secondsRemaining = totalIntervalSeconds;
       }
     };
 
@@ -597,25 +790,118 @@
       return all;
     }
 
-    function computeBestHour(videoArray) {
+    // Hitung Top 3 Jam Potensial + Audience Aktif (gabungan Views & Engagement Rate aktual)
+    function computeTopHours(videoArray) {
       const stats = {};
       videoArray.forEach(v => {
         const d = v.create_time ? new Date(v.create_time * 1000) : new Date();
         const h = d.getHours();
-        if (!stats[h]) stats[h] = { totalViews: 0, count: 0 };
+        if (!stats[h]) stats[h] = { totalViews: 0, totalEng: 0, count: 0 };
         stats[h].totalViews += (v.view_count || 0);
+        stats[h].totalEng += ((v.like_count || 0) + (v.comment_count || 0) + (v.share_count || 0));
         stats[h].count += 1;
       });
-      let bestH = null;
-      let maxAvg = -1;
-      Object.keys(stats).forEach(h => {
-        const avg = stats[h].totalViews / stats[h].count;
-        if (avg > maxAvg) {
-          maxAvg = avg;
-          bestH = h;
+
+      const ranked = Object.keys(stats)
+        .map(h => {
+          const hourInt = parseInt(h, 10);
+          const avgViews = Math.round(stats[h].totalViews / stats[h].count);
+          const avgEng = (stats[h].totalEng / stats[h].count).toFixed(1);
+          const prevHour = (hourInt - 1 + 24) % 24;
+          const suggestedUpload = `${String(prevHour).padStart(2, "0")}:30 WIB`;
+          const peakLabel = `${String(hourInt).padStart(2, "0")}:00 WIB`;
+          // Skor gabungan: rata-rata views + bobot interaksi audience aktif
+          const activeScore = avgViews + (parseFloat(avgEng) * 15);
+          return {
+            hour: hourInt,
+            peakLabel,
+            suggestedUpload,
+            avgViews,
+            avgEng,
+            activeScore,
+            videoCount: stats[h].count
+          };
+        })
+        .sort((a, b) => b.activeScore - a.activeScore);
+
+      return { ranked, stats };
+    }
+
+    function renderTop3Hours(rankedHours, videoArray) {
+      const container = document.getElementById("top3HoursContainer");
+      const segContainer = document.getElementById("audienceSegmentsContainer");
+
+      if (!rankedHours || rankedHours.length === 0) {
+        container.innerHTML = `<div class="col-span-3 bg-zinc-950/80 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-500 text-center">Belum ada data jam tayang video.</div>`;
+        return;
+      }
+
+      const medals = [
+        { badge: "🥇 Potensi #1 (Terkuat)", border: "border-cyan-500/50 bg-cyan-950/20", titleColor: "text-cyan-300" },
+        { badge: "🥈 Potensi #2 (Alternatif)", border: "border-zinc-700/80 bg-zinc-950/80", titleColor: "text-zinc-100" },
+        { badge: "🥉 Potensi #3 (Cadangan)", border: "border-zinc-800 bg-zinc-950/60", titleColor: "text-zinc-200" }
+      ];
+
+      container.innerHTML = rankedHours.slice(0, 3).map((item, idx) => {
+        const style = medals[idx];
+        return `
+          <div class="rounded-xl p-4 border ${style.border} flex flex-col justify-between gap-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold ${style.titleColor}">${style.badge}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">${item.videoCount} video</span>
+            </div>
+
+            <div class="flex items-baseline justify-between">
+              <div>
+                <div class="text-[10px] uppercase tracking-wider text-zinc-400">Jam Ramai (Peak)</div>
+                <div class="text-xl sm:text-2xl font-extrabold text-white tabular-nums">${item.peakLabel}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] uppercase tracking-wider text-zinc-400">Avg Views • Interaksi</div>
+                <div class="text-xs sm:text-sm font-bold text-cyan-400 tabular-nums">${item.avgViews.toLocaleString("id-ID")} • ${item.avgEng}</div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-xs">
+              <span class="text-zinc-400">Disarankan upload:</span>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 font-bold text-emerald-300 tabular-nums">⏰ ${item.suggestedUpload}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Hitung segmen Audience Aktif (Pagi, Siang, Sore, Malam)
+      const segments = [
+        { name: "🌅 Pagi (06–11)", min: 6, max: 11, views: 0, eng: 0, count: 0 },
+        { name: "☀️ Siang (12–16)", min: 12, max: 16, views: 0, eng: 0, count: 0 },
+        { name: "🌆 Sore (17–19)", min: 17, max: 19, views: 0, eng: 0, count: 0 },
+        { name: "🌙 Malam (20–05)", min: 20, max: 29, views: 0, eng: 0, count: 0 }
+      ];
+
+      videoArray.forEach(v => {
+        const d = v.create_time ? new Date(v.create_time * 1000) : new Date();
+        let h = d.getHours();
+        if (h < 6) h += 24;
+        const seg = segments.find(s => h >= s.min && h <= s.max);
+        if (seg) {
+          seg.views += (v.view_count || 0);
+          seg.eng += ((v.like_count || 0) + (v.comment_count || 0) + (v.share_count || 0));
+          seg.count += 1;
         }
       });
-      return { bestH, stats };
+
+      const totalAllViews = segments.reduce((s, x) => s + x.views, 0) || 1;
+      segContainer.innerHTML = segments.map(s => {
+        const avgV = s.count > 0 ? Math.round(s.views / s.count) : 0;
+        const sharePct = Math.round((s.views / totalAllViews) * 100);
+        return `
+          <div class="bg-zinc-950/85 border border-zinc-800/80 rounded-xl p-3">
+            <div class="text-[11px] font-semibold text-zinc-300">${s.name}</div>
+            <div class="text-base font-extrabold text-white mt-1 tabular-nums">${avgV.toLocaleString("id-ID")} <span class="text-[10px] font-normal text-zinc-400">avg</span></div>
+            <div class="text-[10px] text-cyan-400 mt-0.5 tabular-nums">${sharePct}% porsi trafik (${s.count}v)</div>
+          </div>
+        `;
+      }).join("");
     }
 
     window.recalculateAll = function() {
@@ -624,6 +910,9 @@
 
       const allVideos = [...(cloudState.videos || [])].sort((a, b) => (b.create_time || 0) - (a.create_time || 0));
       const scopedVideos = getScopedVideos();
+
+      // Update Live Pulse Monitor
+      updateLivePulseMonitor(user, allVideos);
 
       updateStatusBanner(
         "connected",
@@ -677,16 +966,8 @@
         erStatusEl.className = "text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-amber-950/70 text-amber-400";
       }
 
-      // Hitung Jam Optimal Rentang Aktif vs Tren 20 Video Terakhir
-      const { bestH, stats: hourStats } = computeBestHour(scopedVideos);
-      const { bestH: recentBestH } = computeBestHour(allVideos.slice(0, 20));
-
-      if (bestH !== null) {
-        document.getElementById("kpiBestHour").textContent = `${String(bestH).padStart(2, "0")}:00`;
-      }
-      if (recentBestH !== null) {
-        document.getElementById("kpiRecentHourBadge").textContent = `Tren 20v: ${String(recentBestH).padStart(2, "0")}:00`;
-      }
+      const { ranked: rankedHours, stats: hourStats } = computeTopHours(scopedVideos);
+      renderTop3Hours(rankedHours, scopedVideos);
 
       renderWinningAndKeywords(scopedVideos);
       window.applyVideoFilter(avgViews);
@@ -697,7 +978,7 @@
         document.getElementById("auditActions").innerHTML = cloudState.aiAudit.actions.map(a => `<li>${a}</li>`).join("");
         document.getElementById("aiModeSubtitle").textContent = "✨ Hasil analisis Gemini AI tersinkronisasi di Cloud.";
       } else {
-        window.runAIAudit(false);
+        window.runAIAudit(false, rankedHours);
       }
     };
 
@@ -707,7 +988,6 @@
 
       if (videos.length === 0) return;
 
-      // Top 3 Winning Videos
       const top3 = [...videos].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 3);
       winContainer.innerHTML = top3.map((v, idx) => {
         const views = v.view_count || 0;
@@ -721,14 +1001,13 @@
               <span class="text-zinc-200 font-medium truncate">${title}</span>
             </div>
             <div class="text-right shrink-0">
-              <div class="font-bold text-white">${views.toLocaleString("id-ID")} views</div>
-              <div class="text-[10px] text-emerald-400">ER ${er}% • ${v.duration || 0}s</div>
+              <div class="font-bold text-white tabular-nums">${views.toLocaleString("id-ID")} views</div>
+              <div class="text-[10px] text-emerald-400 tabular-nums">ER ${er}% • ${v.duration || 0}s</div>
             </div>
           </a>
         `;
       }).join("");
 
-      // Keyword & Hashtag Extractor
       const kwMap = {};
       const stopWords = new Set(["yang", "dan", "ini", "itu", "untuk", "dengan", "dari", "bisa", "banget", "buat", "jadi", "sama", "kalau", "kalian", "aku", "kamu", "link", "cek", "keranjang", "kuning", "di", "ke", "nya", "ya", "aja", "lagi", "mau", "sih", "nih"]);
 
@@ -756,7 +1035,7 @@
         kwContainer.innerHTML = topKeywords.map(k => `
           <div class="px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center gap-2 text-xs">
             <span class="font-semibold text-cyan-300">${k.word}</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">${k.avgViews.toLocaleString("id-ID")} avg (${k.count}x)</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 tabular-nums">${k.avgViews.toLocaleString("id-ID")} avg (${k.count}x)</span>
           </div>
         `).join("");
       }
@@ -798,7 +1077,6 @@
         return;
       }
 
-      // Render Desktop Table Rows
       tbody.innerHTML = filtered.map(v => {
         const views = v.view_count || 0;
         const likes = v.like_count || 0;
@@ -809,6 +1087,11 @@
         const dateStr = dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
         const titleText = v.title || v.video_description || "Video Tanpa Judul";
 
+        const delta = videoDeltaMap[v.id] || { dLikes: 0, dViews: 0 };
+        const dLikeTag = delta.dLikes > 0
+          ? `<span class="ml-1 text-[10px] font-bold text-emerald-400">+${delta.dLikes}</span>`
+          : (delta.dLikes < 0 ? `<span class="ml-1 text-[10px] font-bold text-rose-400">${delta.dLikes}</span>` : "");
+
         let badgeHtml = `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-300">Normal</span>`;
         if (views >= Math.max(avgViews * 1.8, 500)) {
           badgeHtml = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">🔥 Viral</span>`;
@@ -817,7 +1100,7 @@
         }
 
         return `
-          <tr class="hover:bg-zinc-900/50 transition">
+          <tr class="hover:bg-zinc-900/50 transition tabular-nums">
             <td class="py-3 px-4 max-w-xs">
               <div class="flex items-center gap-3">
                 ${v.cover_image_url ? `<img src="${v.cover_image_url}" class="w-9 h-12 rounded-lg object-cover bg-zinc-800 shrink-0">` : ""}
@@ -828,7 +1111,7 @@
             <td class="py-3 px-4 text-zinc-400 whitespace-nowrap">${dateStr}</td>
             <td class="py-3 px-4 text-right text-zinc-400 whitespace-nowrap">${v.duration || 0}s</td>
             <td class="py-3 px-4 text-right font-bold text-white">${views.toLocaleString("id-ID")}</td>
-            <td class="py-3 px-4 text-right text-zinc-300">${likes.toLocaleString("id-ID")}</td>
+            <td class="py-3 px-4 text-right text-zinc-200 font-semibold">${likes.toLocaleString("id-ID")}${dLikeTag}</td>
             <td class="py-3 px-4 text-right text-zinc-300">${comments.toLocaleString("id-ID")}</td>
             <td class="py-3 px-4 text-right text-zinc-300">${shares.toLocaleString("id-ID")}</td>
             <td class="py-3 px-4 text-right font-bold ${parseFloat(er) >= 5 ? "text-emerald-400" : "text-amber-400"}">${er}%</td>
@@ -836,7 +1119,6 @@
         `;
       }).join("");
 
-      // Render Mobile Cards (Clean & Zero Horizontal Scroll)
       mobileList.innerHTML = filtered.map(v => {
         const views = v.view_count || 0;
         const likes = v.like_count || 0;
@@ -847,6 +1129,11 @@
         const dateStr = dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
         const titleText = v.title || v.video_description || "Video Tanpa Judul";
 
+        const delta = videoDeltaMap[v.id] || { dLikes: 0, dViews: 0 };
+        const dLikeMobile = delta.dLikes > 0
+          ? `<span class="text-emerald-400 font-bold text-[9px] block">+${delta.dLikes}</span>`
+          : (delta.dLikes < 0 ? `<span class="text-rose-400 font-bold text-[9px] block">${delta.dLikes}</span>` : "");
+
         let tag = `<span class="px-1.5 py-0.5 rounded text-[10px] bg-zinc-800 text-zinc-300">Normal</span>`;
         if (views >= Math.max(avgViews * 1.8, 500)) {
           tag = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400">🔥 Viral</span>`;
@@ -855,7 +1142,7 @@
         }
 
         return `
-          <div class="p-3.5 flex gap-3 items-start">
+          <div class="p-3.5 flex gap-3 items-start tabular-nums">
             ${v.cover_image_url ? `<img src="${v.cover_image_url}" class="w-12 h-16 rounded-lg object-cover bg-zinc-800 shrink-0">` : ""}
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-2 mb-1">
@@ -870,7 +1157,8 @@
                 </div>
                 <div>
                   <div class="text-[9px] text-zinc-500">Likes</div>
-                  <div class="text-[11px] font-semibold text-zinc-300">${likes.toLocaleString("id-ID")}</div>
+                  <div class="text-[11px] font-semibold text-zinc-200">${likes.toLocaleString("id-ID")}</div>
+                  ${dLikeMobile}
                 </div>
                 <div>
                   <div class="text-[9px] text-zinc-500">Komen</div>
@@ -949,7 +1237,7 @@
       });
     }
 
-    window.runAIAudit = async function(useGemini = false) {
+    window.runAIAudit = async function(useGemini = false, precomputedRankedHours = null) {
       const videos = getScopedVideos();
       const user = cloudState.user || {};
       const weakEl = document.getElementById("auditWeaknesses");
@@ -962,15 +1250,16 @@
       const sortedByViews = [...videos].sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
       const topVideos = sortedByViews.slice(0, 5);
       const avgViews = Math.round(videos.reduce((acc, v) => acc + (v.view_count || 0), 0) / videos.length);
-      const bestHourText = document.getElementById("kpiBestHour").textContent;
-      const recentHourText = document.getElementById("kpiRecentHourBadge").textContent;
+      const rankedHours = precomputedRankedHours || computeTopHours(videos).ranked;
+      const top1 = rankedHours[0];
+      const top2 = rankedHours[1];
 
       weakEl.innerHTML = `
         <li>Rata-rata views saat ini <strong>${avgViews.toLocaleString("id-ID")} views/video</strong> dari ${(user.follower_count || 0).toLocaleString("id-ID")} followers — perlu penguatan visual hook di 2 detik pertama agar lolos distribusi gelombang awal.</li>
         <li>Video teratas meraih <strong>${(topVideos[0]?.view_count || 0).toLocaleString("id-ID")} views</strong>, jauh melampaui rata-rata akun.</li>
       `;
       actEl.innerHTML = `
-        <li>Jadwalkan upload utama mendekati <strong>${bestHourText} WIB</strong> (atau uji jam tren terbaru <strong>${recentHourText}</strong>).</li>
+        <li>Jadwalkan upload utama pada <strong>${top1 ? top1.suggestedUpload : "--:--"}</strong> (mengejar jam ramai #1 pukul <strong>${top1 ? top1.peakLabel : "--:--"}</strong>)${top2 ? ` atau slot kedua <strong>${top2.suggestedUpload}</strong>` : ""}.</li>
         <li>Gunakan pola judul & struktur visual dari Top 3 Winning Content di bawah, lalu tutup video dengan CTA pertanyaan singkat di caption.</li>
       `;
 
@@ -979,7 +1268,8 @@
         auditBtn.disabled = true;
 
         const summaryTop = topVideos.map(v => `- "${(v.title || v.video_description || "").slice(0, 80)}" (${v.view_count} views, ${v.like_count} likes, ${v.duration} dtk)`).join("\n");
-        const prompt = `Kamu adalah konsultan strategi TikTok Fashion Affiliate. Analisis data akun "${user.display_name}" (${user.follower_count} followers, rata-rata ${avgViews} views/video, jam puncak historis ${bestHourText} WIB, ${recentHourText}).
+        const topHoursText = rankedHours.slice(0, 3).map((h, i) => `#${i + 1} Peak ${h.peakLabel} (Upload ${h.suggestedUpload}, avg ${h.avgViews} views)`).join(", ");
+        const prompt = `Kamu adalah konsultan strategi TikTok Fashion Affiliate. Analisis data akun "${user.display_name}" (${user.follower_count} followers, rata-rata ${avgViews} views/video, Top 3 Jam Potensial: ${topHoursText}).
 Top 5 video terbaik:
 ${summaryTop}
 
@@ -1044,16 +1334,41 @@ Berikan respon JSON murni tanpa markdown dengan format:
       });
     };
 
+    // Real-Time Countdown Timer (Visual detik & progress bar)
     window.toggleAutoPoll = function() {
-      if (autoPollTimer) clearInterval(autoPollTimer);
+      if (countdownTimer) clearInterval(countdownTimer);
       const isChecked = document.getElementById("autoPollToggle")?.checked;
-      if (isChecked) {
-        autoPollTimer = setInterval(() => {
-          if (!document.hidden && cloudState.accessToken) {
+      totalIntervalSeconds = parseInt(document.getElementById("pollIntervalSelect")?.value || "60", 10);
+      secondsRemaining = totalIntervalSeconds;
+
+      const countdownEl = document.getElementById("liveCountdownText");
+      const barEl = document.getElementById("liveTimerBar");
+
+      if (!isChecked) {
+        if (countdownEl) countdownEl.textContent = "PAUSED";
+        if (barEl) barEl.style.width = "0%";
+        return;
+      }
+
+      countdownTimer = setInterval(() => {
+        if (document.hidden) return;
+        secondsRemaining -= 1;
+
+        if (secondsRemaining <= 0) {
+          secondsRemaining = totalIntervalSeconds;
+          if (cloudState.accessToken) {
             window.syncRealTimeData(false);
           }
-        }, 60000); // Sync otomatis setiap 1 menit saat halaman terbuka
-      }
+        }
+
+        const mins = String(Math.floor(secondsRemaining / 60)).padStart(2, "0");
+        const secs = String(secondsRemaining % 60).padStart(2, "0");
+        if (countdownEl) countdownEl.textContent = `${mins}:${secs}`;
+        if (barEl) {
+          const pct = Math.max(0, Math.min(100, (secondsRemaining / totalIntervalSeconds) * 100));
+          barEl.style.width = `${pct}%`;
+        }
+      }, 1000);
     };
 
     window.toggleAutoPoll();
