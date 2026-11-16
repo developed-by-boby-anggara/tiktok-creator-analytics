@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Creator Analytics Studio – TikTok Real-Time & AI Auditor</title>
+  <title>Creator Analytics Studio – TikTok Real-Time & Firebase Sync</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -18,48 +18,44 @@
 
   <!-- Top Navigation -->
   <nav class="border-b border-zinc-800 bg-zinc-950/90 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 shrink-0">
         <div class="w-8 h-8 rounded-lg tiktok-gradient flex items-center justify-center font-bold text-black">C</div>
-        <span class="font-bold text-lg tracking-tight">Creator Analytics <span class="text-rose-500">Studio</span></span>
+        <span class="font-bold text-base sm:text-lg tracking-tight">Creator Analytics <span class="text-rose-500">Studio</span></span>
       </div>
 
-      <div class="flex items-center gap-2 flex-wrap">
-        <button onclick="syncRealTimeData(true)" id="syncBtn" class="hidden px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-semibold text-emerald-400 transition flex items-center gap-1.5">
-          <span>🔄 Sync Real-Time</span>
+      <div class="flex items-center gap-2 overflow-x-auto py-1">
+        <span id="cloudSyncIndicator" class="px-2.5 py-1.5 rounded-lg bg-amber-950/50 border border-amber-800/50 text-[11px] font-medium text-amber-400 whitespace-nowrap">
+          ☁️ Connecting Cloud...
+        </span>
+        <button onclick="syncRealTimeData(true)" id="syncBtn" class="hidden px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-semibold text-emerald-400 transition whitespace-nowrap">
+          🔄 Sync TikTok
         </button>
-        <button onclick="exportBackupJSON()" title="Download Backup JSON" class="px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-300 transition">
-          ⬇ Backup
+        <button onclick="openConfigModal()" class="px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-200 transition whitespace-nowrap">
+          ⚙️ Config
         </button>
-        <label title="Restore Backup JSON" class="px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-300 transition cursor-pointer">
-          ⬆ Restore
-          <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importBackupJSON(event)">
-        </label>
-        <button onclick="openConfigModal()" class="px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-200 transition">
-          ⚙️ API & Config
-        </button>
-        <button onclick="connectTikTok()" id="connectBtn" class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white transition shadow-lg shadow-rose-600/20">
-          Connect TikTok Account
+        <button onclick="connectTikTok()" id="connectBtn" class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white transition shadow-lg shadow-rose-600/20 whitespace-nowrap">
+          Connect TikTok
         </button>
       </div>
     </div>
   </nav>
 
   <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full space-y-6">
 
     <!-- Status Banner -->
     <div id="statusBanner" class="glass-card rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-l-4 border-l-zinc-600">
       <div class="flex items-center gap-3">
         <img id="userAvatar" src="" alt="Avatar" class="w-11 h-11 rounded-full hidden border border-zinc-700 object-cover">
         <div>
-          <h2 id="statusTitle" class="text-sm font-semibold text-zinc-200">Belum Terhubung ke TikTok API</h2>
-          <p id="statusDesc" class="text-xs text-zinc-400 mt-0.5">Klik "Connect TikTok Account" untuk menarik data profil & seluruh video secara real-time.</p>
+          <h2 id="statusTitle" class="text-sm font-semibold text-zinc-200">Menghubungkan ke Firebase Cloud...</h2>
+          <p id="statusDesc" class="text-xs text-zinc-400 mt-0.5">Memuat data analitik tersinkronisasi untuk PC & HP.</p>
         </div>
       </div>
       <div class="flex items-center gap-2 self-end sm:self-center">
         <span id="lastSyncText" class="text-[11px] text-zinc-500"></span>
-        <span id="statusBadge" class="px-3 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-400">Offline</span>
+        <span id="statusBadge" class="px-3 py-1 rounded-full text-xs font-medium bg-zinc-800 text-zinc-400">Cloud Sync</span>
       </div>
     </div>
 
@@ -114,7 +110,7 @@
             <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30">AI Content Auditor</span>
             <h3 class="text-base font-bold text-white">Diagnosa Performa & Rekomendasi Eksekusi Konten</h3>
           </div>
-          <p id="aiModeSubtitle" class="text-xs text-zinc-400 mt-1">Analisis otomatis berbasis rasio views, retensi interaksi, durasi video, dan Gemini AI.</p>
+          <p id="aiModeSubtitle" class="text-xs text-zinc-400 mt-1">Analisis otomatis tersinkronisasi di Cloud untuk diakses dari PC maupun HP.</p>
         </div>
         <button onclick="runAIAudit(true)" id="auditBtn" class="px-4 py-2 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold transition shrink-0">
           ⚡ Jalankan Audit AI
@@ -125,13 +121,13 @@
         <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg p-4">
           <div class="text-xs font-bold text-amber-400 uppercase tracking-wide mb-2">⚠️ Evaluasi & Celah Algoritma</div>
           <ul id="auditWeaknesses" class="text-xs text-zinc-300 space-y-2 list-disc list-inside leading-relaxed">
-            <li>Menunggu sinkronisasi data video untuk memulai diagnosa.</li>
+            <li>Menunggu sinkronisasi data video dari Cloud...</li>
           </ul>
         </div>
         <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-lg p-4">
           <div class="text-xs font-bold text-emerald-400 uppercase tracking-wide mb-2">🎯 Action Plan & Ide Hook Hari Ini</div>
           <ul id="auditActions" class="text-xs text-zinc-300 space-y-2 list-disc list-inside leading-relaxed">
-            <li>Masukkan Gemini API Key di ⚙️ API & Config untuk mendapatkan ide skrip & hook fashion affiliate yang dipersonalisasi.</li>
+            <li>Masukkan Gemini API Key di ⚙️ Config untuk menyimpan hasil audit AI ke Firebase secara otomatis.</li>
           </ul>
         </div>
       </div>
@@ -158,7 +154,7 @@
       <div class="glass-card rounded-xl p-5 flex flex-col justify-between">
         <div>
           <h3 class="text-sm font-bold text-white">Sync Data GMV (TikTok Affiliate)</h3>
-          <p class="text-xs text-zinc-400 mt-1">Export CSV dari TikTok Affiliate Center lalu drop di sini untuk menggabungkan data komisi.</p>
+          <p class="text-xs text-zinc-400 mt-1">Upload CSV dari PC, angka GMV otomatis muncul di HP kamu via Firebase.</p>
         </div>
 
         <label class="mt-4 border-2 border-dashed border-zinc-700 hover:border-rose-500/70 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition bg-zinc-950/40">
@@ -168,7 +164,7 @@
           <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
         </label>
 
-        <div id="csvStatus" class="mt-3 text-[11px] text-zinc-400 text-center">Belum ada file CSV yang diunggah.</div>
+        <div id="csvStatus" class="mt-3 text-[11px] text-zinc-400 text-center">Siap menerima file CSV.</div>
       </div>
     </div>
 
@@ -177,7 +173,7 @@
       <div class="p-5 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 class="text-sm font-bold text-white">Katalog Performa Video</h3>
-          <p class="text-xs text-zinc-400">Seluruh video yang ditarik langsung dari TikTok API.</p>
+          <p class="text-xs text-zinc-400">Tersinkronisasi otomatis via Firebase Firestore.</p>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
           <input type="text" id="videoSearchInput" oninput="applyVideoFilter()" placeholder="Cari caption / produk..." class="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
@@ -207,7 +203,7 @@
           </thead>
           <tbody id="videoTableBody" class="divide-y divide-zinc-800/60 text-xs">
             <tr>
-              <td colspan="8" class="py-8 text-center text-zinc-500">Belum ada data video. Hubungkan akun TikTok untuk memuat video.</td>
+              <td colspan="8" class="py-8 text-center text-zinc-500">Memuat data dari Firebase...</td>
             </tr>
           </tbody>
         </table>
@@ -220,8 +216,8 @@
   <div id="configModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div>
-        <h3 class="text-base font-bold text-white">Konfigurasi TikTok API & Gemini AI</h3>
-        <p class="text-xs text-zinc-400 mt-1">Data disimpan aman di LocalStorage browser kamu sendiri.</p>
+        <h3 class="text-base font-bold text-white">Konfigurasi Cloud (Tersimpan di Firebase)</h3>
+        <p class="text-xs text-zinc-400 mt-1">Perubahan di sini otomatis berlaku di PC dan HP.</p>
       </div>
 
       <div class="space-y-3">
@@ -238,36 +234,107 @@
           <input type="text" id="cfgWorkerUrl" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
         </div>
         <div>
-          <label class="block text-xs font-medium text-zinc-300 mb-1">Gemini API Key (Untuk AI Auditor & Ide Konten Otomatis)</label>
+          <label class="block text-xs font-medium text-zinc-300 mb-1">Gemini API Key (Untuk AI Auditor & Ide Konten)</label>
           <input type="password" id="cfgGeminiKey" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white focus:outline-none focus:border-rose-500">
         </div>
       </div>
 
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeConfigModal()" class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-300">Batal</button>
-        <button onclick="saveConfig()" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white">Simpan Konfigurasi</button>
+        <button onclick="saveConfig()" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white">Simpan ke Cloud</button>
       </div>
     </div>
   </div>
 
-  <script>
-    const DEFAULT_CONFIG = {
-      clientKey: "sbaww1lzndtyn8cp0j",
-      redirectUri: "https://developed-by-boby-anggara.github.io/tiktok-creator-analytics/",
-      workerUrl: "https://tiktok-proxy.bobyanggara101100.workers.dev/",
-      geminiKey: ""
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAoMNKyyHe6ou5GZQSbtEsB5Q-TJhI2L5s",
+      authDomain: "data-analitic-54f06.firebaseapp.com",
+      projectId: "data-analitic-54f06",
+      storageBucket: "data-analitic-54f06.firebasestorage.app",
+      messagingSenderId: "352735806321",
+      appId: "1:352735806321:web:68058cd622b62030702cd0",
+      measurementId: "G-Y8F3VLLRZQ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const STUDIO_DOC_REF = doc(db, "creator_studio", "chocoovora_main");
+
+    let cloudState = {
+      config: {
+        clientKey: "sbaww1lzndtyn8cp0j",
+        redirectUri: "https://developed-by-boby-anggara.github.io/tiktok-creator-analytics/",
+        workerUrl: "https://tiktok-proxy.bobyanggara101100.workers.dev/",
+        geminiKey: ""
+      },
+      accessToken: "",
+      refreshToken: "",
+      user: null,
+      videos: [],
+      gmvTotal: 0,
+      csvFileName: "",
+      lastSync: "",
+      aiAudit: null
     };
 
     let hourlyChartInstance = null;
     let durationChartInstance = null;
 
-    function getConfig() {
-      const saved = JSON.parse(localStorage.getItem("tiktok_studio_config") || "{}");
-      return { ...DEFAULT_CONFIG, ...saved };
+    async function saveToFirestore(partialData) {
+      cloudState = { ...cloudState, ...partialData };
+      const indicator = document.getElementById("cloudSyncIndicator");
+      indicator.textContent = "☁️ Saving...";
+      try {
+        await setDoc(STUDIO_DOC_REF, partialData, { merge: true });
+        indicator.textContent = "☁️ Firebase Synced";
+        indicator.className = "px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/60 text-[11px] font-medium text-emerald-400 whitespace-nowrap";
+      } catch (err) {
+        console.error("Firestore save error:", err);
+        indicator.textContent = "⚠️ Cloud Error";
+        indicator.className = "px-2.5 py-1.5 rounded-lg bg-rose-950/60 border border-rose-800/60 text-[11px] font-medium text-rose-400 whitespace-nowrap";
+        alert("Gagal menyimpan ke Firebase. Pastikan Firestore Database sudah dibuat dalam mode 'Start in test mode'.");
+      }
     }
 
-    function openConfigModal() {
-      const cfg = getConfig();
+    onSnapshot(STUDIO_DOC_REF, (snapshot) => {
+      const indicator = document.getElementById("cloudSyncIndicator");
+      indicator.textContent = "☁️ Firebase Synced";
+      indicator.className = "px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800/60 text-[11px] font-medium text-emerald-400 whitespace-nowrap";
+
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        cloudState = {
+          ...cloudState,
+          ...data,
+          config: { ...cloudState.config, ...(data.config || {}) }
+        };
+
+        document.getElementById("kpiGMV").textContent = `Rp ${(cloudState.gmvTotal || 0).toLocaleString("id-ID")}`;
+        if (cloudState.csvFileName) {
+          document.getElementById("csvStatus").textContent = `Tersinkronisasi dari file: ${cloudState.csvFileName}`;
+        }
+
+        if (cloudState.user) {
+          renderDashboard(cloudState.user, cloudState.videos || []);
+        } else {
+          updateStatusBanner("offline", "Firebase Terhubung – Siap Sinkronisasi TikTok", "Klik 'Connect TikTok' satu kali untuk mengisi database Cloud kamu.");
+          renderCharts({}, {});
+        }
+      } else {
+        updateStatusBanner("offline", "Database Firebase Siap", "Klik 'Connect TikTok' untuk menarik data pertama kali ke Firebase.");
+        renderCharts({}, {});
+      }
+    }, (error) => {
+      console.error("Firestore listener error:", error);
+      document.getElementById("cloudSyncIndicator").textContent = "⚠️ Firestore Belum Aktif";
+    });
+
+    window.openConfigModal = function() {
+      const cfg = cloudState.config;
       document.getElementById("cfgClientKey").value = cfg.clientKey;
       document.getElementById("cfgRedirectUri").value = cfg.redirectUri;
       document.getElementById("cfgWorkerUrl").value = cfg.workerUrl;
@@ -275,74 +342,72 @@
       const modal = document.getElementById("configModal");
       modal.classList.remove("hidden");
       modal.classList.add("flex");
-    }
+    };
 
-    function closeConfigModal() {
+    window.closeConfigModal = function() {
       const modal = document.getElementById("configModal");
       modal.classList.add("hidden");
       modal.classList.remove("flex");
-    }
+    };
 
-    function saveConfig() {
+    window.saveConfig = async function() {
       const newCfg = {
         clientKey: document.getElementById("cfgClientKey").value.trim(),
         redirectUri: document.getElementById("cfgRedirectUri").value.trim(),
         workerUrl: document.getElementById("cfgWorkerUrl").value.trim(),
         geminiKey: document.getElementById("cfgGeminiKey").value.trim()
       };
-      localStorage.setItem("tiktok_studio_config", JSON.stringify(newCfg));
-      closeConfigModal();
-      alert("Konfigurasi berhasil disimpan!");
-    }
+      await saveToFirestore({ config: newCfg });
+      window.closeConfigModal();
+    };
 
-    function connectTikTok() {
-      const cfg = getConfig();
+    window.connectTikTok = function() {
+      const cfg = cloudState.config;
       const csrfState = Math.random().toString(36).substring(2);
       const scopes = "user.info.basic,user.info.profile,user.info.stats,video.list";
       const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${encodeURIComponent(cfg.clientKey)}&scope=${encodeURIComponent(scopes)}&response_type=code&redirect_uri=${encodeURIComponent(cfg.redirectUri)}&state=${csrfState}`;
       window.location.href = authUrl;
-    }
+    };
 
-    // Sinkronisasi Real-Time memakai token yang sudah tersimpan tanpa perlu login ulang
-    async function syncRealTimeData(isManual = false) {
-      const accessToken = localStorage.getItem("tiktok_access_token");
-      const refreshToken = localStorage.getItem("tiktok_refresh_token");
-      if (!accessToken && !refreshToken) {
-        if (isManual) connectTikTok();
+    window.syncRealTimeData = async function(isManual = false) {
+      if (!cloudState.accessToken && !cloudState.refreshToken) {
+        if (isManual) window.connectTikTok();
         return;
       }
 
       const syncBtn = document.getElementById("syncBtn");
       if (syncBtn) syncBtn.innerHTML = `<span class="animate-spin">⏳</span> Syncing...`;
 
-      const cfg = getConfig();
+      const cfg = cloudState.config;
       try {
         const res = await fetch(cfg.workerUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            access_token: accessToken,
-            refresh_token: refreshToken
+            access_token: cloudState.accessToken,
+            refresh_token: cloudState.refreshToken
           })
         });
         const data = await res.json();
         if (data.success && data.user) {
-          if (data.access_token) localStorage.setItem("tiktok_access_token", data.access_token);
-          if (data.refresh_token) localStorage.setItem("tiktok_refresh_token", data.refresh_token);
-          localStorage.setItem("tiktok_user_data", JSON.stringify(data.user));
-          localStorage.setItem("tiktok_video_list", JSON.stringify(data.videos || []));
-          localStorage.setItem("tiktok_last_sync", new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-          renderDashboard(data.user, data.videos || []);
+          const nowStr = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          await saveToFirestore({
+            accessToken: data.access_token || cloudState.accessToken,
+            refreshToken: data.refresh_token || cloudState.refreshToken,
+            user: data.user,
+            videos: data.videos || [],
+            lastSync: nowStr
+          });
         } else if (res.status === 401 && isManual) {
           alert("Sesi token telah berakhir. Mengarahkan ke login TikTok...");
-          connectTikTok();
+          window.connectTikTok();
         }
       } catch (err) {
-        console.error("Auto-sync error:", err);
+        console.error("Sync error:", err);
       } finally {
-        if (syncBtn) syncBtn.innerHTML = `<span>🔄 Sync Real-Time</span>`;
+        if (syncBtn) syncBtn.innerHTML = `<span>🔄 Sync TikTok</span>`;
       }
-    }
+    };
 
     async function checkAuthCallback() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -357,9 +422,9 @@
 
       if (authCode) {
         window.history.replaceState({}, document.title, window.location.pathname);
-        updateStatusBanner("loading", "Menghubungkan ke TikTok API...", "Menukar kode otorisasi dan menarik seluruh katalog video via Cloudflare Worker...");
+        updateStatusBanner("loading", "Menghubungkan ke TikTok API...", "Menarik seluruh data profil & video lalu menyimpannya ke Firebase...");
 
-        const cfg = getConfig();
+        const cfg = cloudState.config;
         try {
           const response = await fetch(cfg.workerUrl, {
             method: "POST",
@@ -373,28 +438,20 @@
           const data = await response.json();
 
           if (data.success && data.user) {
-            if (data.access_token) localStorage.setItem("tiktok_access_token", data.access_token);
-            if (data.refresh_token) localStorage.setItem("tiktok_refresh_token", data.refresh_token);
-            localStorage.setItem("tiktok_user_data", JSON.stringify(data.user));
-            localStorage.setItem("tiktok_video_list", JSON.stringify(data.videos || []));
-            localStorage.setItem("tiktok_last_sync", new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-            renderDashboard(data.user, data.videos || []);
+            const nowStr = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+            await saveToFirestore({
+              accessToken: data.access_token || "",
+              refreshToken: data.refresh_token || "",
+              user: data.user,
+              videos: data.videos || [],
+              lastSync: nowStr
+            });
           } else {
             const errMsg = data.details?.error_description || data.details?.message || data.error || "Gagal mengambil data dari TikTok.";
             updateStatusBanner("error", "Gagal Menarik Data TikTok", errMsg);
           }
         } catch (err) {
           updateStatusBanner("error", "Koneksi ke Cloudflare Worker Gagal", err.message);
-        }
-      } else {
-        const savedUser = JSON.parse(localStorage.getItem("tiktok_user_data") || "null");
-        const savedVideos = JSON.parse(localStorage.getItem("tiktok_video_list") || "[]");
-        if (savedUser) {
-          renderDashboard(savedUser, savedVideos);
-          // Otomatis tarik pembaruan real-time di latar belakang saat halaman dibuka
-          syncRealTimeData(false);
-        } else {
-          renderCharts({}, {});
         }
       }
     }
@@ -423,10 +480,9 @@
         banner.classList.add("border-l-emerald-500");
         titleEl.className = "text-sm font-semibold text-emerald-400";
         badge.className = "px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800";
-        badge.textContent = "Live Connected";
+        badge.textContent = "Live Cloud";
         syncBtn.classList.remove("hidden");
-        const lastSync = localStorage.getItem("tiktok_last_sync");
-        if (lastSync) lastSyncEl.textContent = `Update terakhir: ${lastSync} WIB`;
+        if (cloudState.lastSync) lastSyncEl.textContent = `Sync: ${cloudState.lastSync} WIB`;
       } else if (type === "loading") {
         banner.classList.add("border-l-amber-500");
         titleEl.className = "text-sm font-semibold text-amber-400";
@@ -437,6 +493,9 @@
         titleEl.className = "text-sm font-semibold text-rose-400";
         badge.className = "px-3 py-1 rounded-full text-xs font-medium bg-rose-950 text-rose-400 border border-rose-800";
         badge.textContent = "Error";
+      } else {
+        banner.classList.add("border-l-zinc-600");
+        titleEl.className = "text-sm font-semibold text-zinc-200";
       }
     }
 
@@ -444,7 +503,7 @@
       updateStatusBanner(
         "connected",
         `Terhubung: ${user.display_name || "Creator"}`,
-        `Total Video Akun: ${(user.video_count || videos.length).toLocaleString("id-ID")} • Video Dianalisis: ${videos.length} • Total Likes: ${(user.likes_count || 0).toLocaleString("id-ID")}`,
+        `Total Video Akun: ${(user.video_count || videos.length).toLocaleString("id-ID")} • Dianalisis: ${videos.length} • Likes: ${(user.likes_count || 0).toLocaleString("id-ID")}`,
         user.avatar_url || ""
       );
 
@@ -513,13 +572,20 @@
         document.getElementById("kpiBestHour").textContent = `${String(bestHour).padStart(2, "0")}:00 WIB`;
       }
 
-      applyVideoFilter();
+      window.applyVideoFilter();
       renderCharts(hourStats, durationStats);
-      runAIAudit(false);
+
+      if (cloudState.aiAudit && cloudState.aiAudit.weaknesses) {
+        document.getElementById("auditWeaknesses").innerHTML = cloudState.aiAudit.weaknesses.map(w => `<li>${w}</li>`).join("");
+        document.getElementById("auditActions").innerHTML = cloudState.aiAudit.actions.map(a => `<li>${a}</li>`).join("");
+        document.getElementById("aiModeSubtitle").textContent = "✨ Hasil analisis Gemini AI tersinkronisasi dari Firebase Cloud.";
+      } else {
+        window.runAIAudit(false);
+      }
     }
 
-    function applyVideoFilter() {
-      const videos = JSON.parse(localStorage.getItem("tiktok_video_list") || "[]");
+    window.applyVideoFilter = function() {
+      const videos = cloudState.videos || [];
       const query = (document.getElementById("videoSearchInput")?.value || "").toLowerCase();
       const sortBy = document.getElementById("videoSortSelect")?.value || "newest";
 
@@ -544,7 +610,7 @@
       const tbody = document.getElementById("videoTableBody");
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-zinc-500">Tidak ada video yang sesuai dengan filter.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-zinc-500">Belum ada video yang ditampilkan.</td></tr>`;
         return;
       }
 
@@ -576,7 +642,7 @@
           </tr>
         `;
       }).join("");
-    }
+    };
 
     function renderCharts(hourStats, durationStats) {
       const ctxHour = document.getElementById("hourlyChart").getContext("2d");
@@ -640,14 +706,13 @@
       });
     }
 
-    // AI Content Auditor (Terhubung langsung ke Gemini API jika key diisi)
-    async function runAIAudit(useGemini = false) {
-      const videos = JSON.parse(localStorage.getItem("tiktok_video_list") || "[]");
-      const user = JSON.parse(localStorage.getItem("tiktok_user_data") || "{}");
+    window.runAIAudit = async function(useGemini = false) {
+      const videos = cloudState.videos || [];
+      const user = cloudState.user || {};
       const weakEl = document.getElementById("auditWeaknesses");
       const actEl = document.getElementById("auditActions");
       const auditBtn = document.getElementById("auditBtn");
-      const cfg = getConfig();
+      const cfg = cloudState.config;
 
       if (videos.length === 0) return;
 
@@ -656,17 +721,15 @@
       const avgViews = Math.round(videos.reduce((acc, v) => acc + (v.view_count || 0), 0) / videos.length);
       const bestHourText = document.getElementById("kpiBestHour").textContent;
 
-      // Fallback aturan lokal cepat
       weakEl.innerHTML = `
         <li>Rasio views terhadap followers masih rendah (<strong>${avgViews.toLocaleString("id-ID")} views/video</strong> dari ${(user.follower_count || 0).toLocaleString("id-ID")} followers) — indikasi hook 2 detik pertama belum menahan scroll audiens baru.</li>
         <li>Video terbaikmu meraih <strong>${(topVideos[0]?.view_count || 0).toLocaleString("id-ID")} views</strong>, namun pola struktur hook tersebut belum direplikasi secara konsisten.</li>
       `;
       actEl.innerHTML = `
         <li>Upload konten utama tepat 15–30 menit sebelum <strong>${bestHourText}</strong>.</li>
-        <li>Ubah format pembuka: langsung tunjukkan hasil pemakaian outfit/produk di detik ke-0 tanpa intro sapaan, dan sisipkan pertanyaan pilihan (A vs B) di caption.</li>
+        <li>Langsung tunjukkan hasil pemakaian outfit/produk di detik ke-0 tanpa intro sapaan, dan sisipkan pertanyaan pilihan di caption.</li>
       `;
 
-      // Jika user menekan tombol Audit AI dan memiliki Gemini API Key
       if (useGemini && cfg.geminiKey) {
         auditBtn.textContent = "⏳ Menganalisis via Gemini...";
         auditBtn.disabled = true;
@@ -690,33 +753,29 @@ Berikan respon JSON murni tanpa markdown dengan format:
           const cleanJson = rawText.replace(/```json|```/g, "").trim();
           const parsed = JSON.parse(cleanJson);
 
-          if (parsed.weaknesses) {
-            weakEl.innerHTML = parsed.weaknesses.map(w => `<li>${w}</li>`).join("");
+          if (parsed.weaknesses && parsed.actions) {
+            await saveToFirestore({ aiAudit: parsed });
           }
-          if (parsed.actions) {
-            actEl.innerHTML = parsed.actions.map(a => `<li>${a}</li>`).join("");
-          }
-          document.getElementById("aiModeSubtitle").textContent = "✨ Dianalisis langsung oleh Gemini AI berdasarkan riwayat video akunmu.";
         } catch (e) {
           console.error("Gemini AI error:", e);
-          alert("Gagal memanggil Gemini API. Pastikan Gemini API Key di ⚙️ API & Config sudah benar.");
+          alert("Gagal memanggil Gemini API. Pastikan Gemini API Key di ⚙️ Config sudah benar.");
         } finally {
           auditBtn.textContent = "⚡ Jalankan Audit AI";
           auditBtn.disabled = false;
         }
       } else if (useGemini && !cfg.geminiKey) {
-        alert("Masukkan Gemini API Key di tombol ⚙️ API & Config terlebih dahulu untuk mengaktifkan analisis AI mendalam!");
+        alert("Masukkan Gemini API Key di tombol ⚙️ Config terlebih dahulu untuk mengaktifkan analisis AI mendalam!");
       }
-    }
+    };
 
-    function handleCSVUpload(event) {
+    window.handleCSVUpload = function(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
-        complete: function(results) {
+        complete: async function(results) {
           let totalGMV = 0;
           results.data.forEach(row => {
             const gmvKey = Object.keys(row).find(k => k.toLowerCase().includes("gmv") || k.toLowerCase().includes("penjualan") || k.toLowerCase().includes("revenue"));
@@ -725,61 +784,18 @@ Berikan respon JSON murni tanpa markdown dengan format:
               if (!isNaN(num)) totalGMV += num;
             }
           });
-          localStorage.setItem("tiktok_gmv_total", totalGMV);
-          document.getElementById("kpiGMV").textContent = `Rp ${totalGMV.toLocaleString("id-ID")}`;
-          document.getElementById("csvStatus").textContent = `Berhasil memuat ${results.data.length} baris data dari ${file.name}`;
+          await saveToFirestore({ gmvTotal: totalGMV, csvFileName: file.name });
         }
       });
-    }
+    };
 
-    function exportBackupJSON() {
-      const payload = {
-        user: JSON.parse(localStorage.getItem("tiktok_user_data") || "null"),
-        videos: JSON.parse(localStorage.getItem("tiktok_video_list") || "[]"),
-        gmv: localStorage.getItem("tiktok_gmv_total") || "0",
-        exportedAt: new Date().toISOString()
-      };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `tiktok-analytics-backup-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-    }
-
-    function importBackupJSON(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.user) localStorage.setItem("tiktok_user_data", JSON.stringify(data.user));
-          if (data.videos) localStorage.setItem("tiktok_video_list", JSON.stringify(data.videos));
-          if (data.gmv) {
-            localStorage.setItem("tiktok_gmv_total", data.gmv);
-            document.getElementById("kpiGMV").textContent = `Rp ${Number(data.gmv).toLocaleString("id-ID")}`;
-          }
-          if (data.user) renderDashboard(data.user, data.videos || []);
-          alert("Backup data berhasil dipulihkan!");
-        } catch (err) {
-          alert("Format file backup tidak valid.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    // Auto-polling real-time setiap 5 menit saat tab dashboard terbuka
     setInterval(() => {
-      if (!document.hidden && localStorage.getItem("tiktok_access_token")) {
-        syncRealTimeData(false);
+      if (!document.hidden && cloudState.accessToken) {
+        window.syncRealTimeData(false);
       }
     }, 300000);
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const savedGMV = localStorage.getItem("tiktok_gmv_total");
-      if (savedGMV) document.getElementById("kpiGMV").textContent = `Rp ${Number(savedGMV).toLocaleString("id-ID")}`;
-      checkAuthCallback();
-    });
+    checkAuthCallback();
   </script>
 </body>
 </html>
