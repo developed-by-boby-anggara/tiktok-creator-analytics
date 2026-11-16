@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Creator Analytics Studio V.4.0 – TikTok Real-Time & Live Pulse</title>
+  <title>Creator Analytics Studio V.4.2 – TikTok Real-Time & Product Click Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -15,6 +15,7 @@
     @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
     .live-dot { animation: pulse-dot 1.5s infinite ease-in-out; }
     .tabular-nums { font-variant-numeric: tabular-nums; }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20 sm:pb-8">
@@ -26,7 +27,7 @@
         <div class="w-8 h-8 rounded-lg tiktok-gradient flex items-center justify-center font-extrabold text-black shrink-0">C</div>
         <div class="flex items-center gap-2 min-w-0">
           <span class="font-bold text-sm sm:text-lg tracking-tight truncate">Creator Analytics <span class="text-rose-500">Studio</span></span>
-          <span class="px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/40 text-[10px] font-extrabold text-rose-400 tracking-wide shrink-0">V.4.0</span>
+          <span class="px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/40 text-[10px] font-extrabold text-rose-400 tracking-wide shrink-0">V.4.2</span>
         </div>
       </div>
 
@@ -52,45 +53,67 @@
   <!-- Main Container -->
   <main class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-7 flex-1 w-full space-y-5">
 
-    <!-- Profile & Real-Time Control Bar -->
-    <div id="statusBanner" class="glass-card rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3.5 border-l-4 border-l-zinc-600">
-      <div class="flex items-center gap-3 min-w-0">
-        <img id="userAvatar" src="" alt="Avatar" class="w-12 h-12 rounded-full hidden border-2 border-rose-500/50 object-cover shrink-0">
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <h2 id="statusTitle" class="text-sm sm:text-base font-bold text-zinc-100 truncate">Menghubungkan ke Firebase Cloud...</h2>
-            <span id="statusBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400">Syncing</span>
+    <!-- Profile & Real-Time Date/Scope Control Bar -->
+    <div id="statusBanner" class="glass-card rounded-2xl p-4 flex flex-col gap-3.5 border-l-4 border-l-zinc-600">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+        <div class="flex items-center gap-3 min-w-0">
+          <img id="userAvatar" src="" alt="Avatar" class="w-12 h-12 rounded-full hidden border-2 border-rose-500/50 object-cover shrink-0">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 id="statusTitle" class="text-sm sm:text-base font-bold text-zinc-100 truncate">Menghubungkan ke Firebase Cloud...</h2>
+              <span id="statusBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400">Syncing</span>
+            </div>
+            <p id="statusDesc" class="text-xs text-zinc-400 mt-0.5 line-clamp-2">Memuat profil dan katalog video real-time...</p>
+            <p id="lastSyncText" class="text-[11px] text-emerald-400/90 mt-1 font-medium"></p>
           </div>
-          <p id="statusDesc" class="text-xs text-zinc-400 mt-0.5 line-clamp-2">Memuat profil dan katalog video real-time...</p>
-          <p id="lastSyncText" class="text-[11px] text-emerald-400/90 mt-1 font-medium"></p>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap pt-2 md:pt-0 border-t md:border-t-0 border-zinc-800/80">
+          <div class="flex items-center gap-1.5 bg-zinc-950/90 border border-zinc-800 rounded-xl px-2.5 py-1.5">
+            <span class="text-[11px] text-zinc-400">Rentang:</span>
+            <select id="analysisScopeSelect" onchange="handleScopeChange()" class="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer">
+              <option value="all" class="bg-zinc-900">Semua Video (All-Time)</option>
+              <option value="7d" class="bg-zinc-900">7 Hari Terakhir (Mingguan)</option>
+              <option value="30d" class="bg-zinc-900">30 Hari Terakhir (Bulanan)</option>
+              <option value="this_month" class="bg-zinc-900">Bulan Ini</option>
+              <option value="custom" class="bg-zinc-900">📅 Pilih Tanggal Sendiri</option>
+              <option value="20" class="bg-zinc-900">20 Video Terakhir</option>
+              <option value="10" class="bg-zinc-900">10 Video Terakhir</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1.5 bg-zinc-950/90 border border-zinc-800 rounded-xl px-2.5 py-1.5">
+            <input type="checkbox" id="autoPollToggle" checked onchange="toggleAutoPoll()" class="accent-emerald-500 rounded cursor-pointer">
+            <span class="text-[11px] text-zinc-300">Live Timer:</span>
+            <select id="pollIntervalSelect" onchange="toggleAutoPoll()" class="bg-transparent text-xs font-bold text-emerald-400 focus:outline-none cursor-pointer">
+              <option value="30" class="bg-zinc-900">30 dtk</option>
+              <option value="60" selected class="bg-zinc-900">1 mnt</option>
+              <option value="180" class="bg-zinc-900">3 mnt</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 flex-wrap pt-2 md:pt-0 border-t md:border-t-0 border-zinc-800/80">
-        <div class="flex items-center gap-1.5 bg-zinc-950/90 border border-zinc-800 rounded-xl px-2.5 py-1.5">
-          <span class="text-[11px] text-zinc-400">Rentang:</span>
-          <select id="analysisScopeSelect" onchange="recalculateAll()" class="bg-transparent text-xs font-semibold text-white focus:outline-none">
-            <option value="all" class="bg-zinc-900">Semua Video (All-Time)</option>
-            <option value="20" class="bg-zinc-900">20 Video Terakhir</option>
-            <option value="10" class="bg-zinc-900">10 Video Terakhir</option>
-          </select>
+      <!-- Custom Date Range Picker -->
+      <div id="customDateBar" class="hidden pt-3 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-zinc-950/60 p-3 rounded-xl">
+        <div class="text-xs font-semibold text-cyan-300 flex items-center gap-1.5">
+          <span>📅 Filter Tanggal Kustom:</span>
         </div>
-
-        <div class="flex items-center gap-1.5 bg-zinc-950/90 border border-zinc-800 rounded-xl px-2.5 py-1.5">
-          <input type="checkbox" id="autoPollToggle" checked onchange="toggleAutoPoll()" class="accent-emerald-500 rounded cursor-pointer">
-          <span class="text-[11px] text-zinc-300">Live Timer:</span>
-          <select id="pollIntervalSelect" onchange="toggleAutoPoll()" class="bg-transparent text-xs font-bold text-emerald-400 focus:outline-none">
-            <option value="30" class="bg-zinc-900">30 dtk</option>
-            <option value="60" selected class="bg-zinc-900">1 mnt</option>
-            <option value="180" class="bg-zinc-900">3 mnt</option>
-          </select>
+        <div class="grid grid-cols-2 sm:flex items-center gap-2">
+          <div class="flex items-center gap-1.5 bg-zinc-900 border border-zinc-700 rounded-lg px-2.5 py-1.5">
+            <span class="text-[10px] text-zinc-400">Dari:</span>
+            <input type="date" id="dateStartInput" onchange="recalculateAll()" class="bg-transparent text-xs font-semibold text-white focus:outline-none w-full">
+          </div>
+          <div class="flex items-center gap-1.5 bg-zinc-900 border border-zinc-700 rounded-lg px-2.5 py-1.5">
+            <span class="text-[10px] text-zinc-400">Sampai:</span>
+            <input type="date" id="dateEndInput" onchange="recalculateAll()" class="bg-transparent text-xs font-semibold text-white focus:outline-none w-full">
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- V.4.0 FEATURE: REAL-TIME LIVE PULSE MONITOR (LIKES & VIEWS DELTA + COUNTDOWN TIMER) -->
+    <!-- REAL-TIME LIVE PULSE MONITOR -->
     <div class="glass-card rounded-2xl p-4 sm:p-5 border border-rose-500/30 relative overflow-hidden">
-      <!-- Progress Bar Countdown -->
       <div class="absolute top-0 left-0 right-0 h-1 bg-zinc-900">
         <div id="liveTimerBar" class="h-full tiktok-gradient transition-all duration-1000 ease-linear" style="width: 100%;"></div>
       </div>
@@ -118,7 +141,6 @@
         </div>
       </div>
 
-      <!-- Live Counters Grid -->
       <div class="grid grid-cols-3 gap-2.5 sm:gap-4 mb-4">
         <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl p-3.5">
           <div class="text-[11px] text-zinc-400 font-medium">Total Likes Akun</div>
@@ -145,7 +167,6 @@
         </div>
       </div>
 
-      <!-- Video Live Delta Ticker -->
       <div class="bg-zinc-950/75 border border-zinc-800/80 rounded-xl p-3">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Log Pergerakan Likes Video Real-Time</span>
@@ -157,8 +178,8 @@
       </div>
     </div>
 
-    <!-- KPI Cards (4 Utama) -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <!-- KPI Cards (5 Utama: Followers, Avg Views, ER, Total Klik Produk, GMV) -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
       <div class="glass-card rounded-2xl p-4">
         <div class="text-[11px] sm:text-xs text-zinc-400 font-medium">Total Followers</div>
         <div class="mt-1.5 flex items-baseline justify-between gap-1 flex-wrap">
@@ -184,6 +205,14 @@
       </div>
 
       <div class="glass-card rounded-2xl p-4">
+        <div class="text-[11px] sm:text-xs text-zinc-400 font-medium">Total Klik Produk</div>
+        <div class="mt-1.5 flex items-baseline justify-between gap-1 flex-wrap">
+          <span id="kpiProductClicks" class="text-xl sm:text-2xl font-extrabold text-amber-400 tabular-nums">0</span>
+          <span id="kpiProductCTR" class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-amber-950/70 text-amber-300 border border-amber-800/50 tabular-nums">CTR: 0.0%</span>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 col-span-2 lg:col-span-1">
         <div class="text-[11px] sm:text-xs text-zinc-400 font-medium">Estimasi GMV & Komisi</div>
         <div class="mt-1.5 flex items-baseline justify-between gap-1 flex-wrap">
           <span id="kpiGMV" class="text-xl sm:text-2xl font-extrabold text-emerald-400 tabular-nums">Rp 0</span>
@@ -199,14 +228,13 @@
           <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Smart Schedule & Audience</span>
           <h3 class="text-sm sm:text-base font-bold text-white">Top 3 Jam Potensial & Rekomendasi Waktu Upload</h3>
         </div>
-        <p class="text-xs text-zinc-400 mt-0.5">Dihitung real-time dari kombinasi views tertinggi & intensitas interaksi audience aktif.</p>
+        <p class="text-xs text-zinc-400 mt-0.5">Dihitung real-time sesuai rentang tanggal/waktu yang dipilih — disarankan upload 30 menit lebih awal.</p>
       </div>
 
       <div id="top3HoursContainer" class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div class="bg-zinc-950/80 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-500 text-center">Memuat data jam potensial...</div>
       </div>
 
-      <!-- Active Audience Segment Bar -->
       <div class="pt-3 border-t border-zinc-800/80">
         <div class="text-xs font-bold text-zinc-200 mb-2">👥 Konsentrasi Audience Aktif Berdasarkan Segmen Waktu (WIB)</div>
         <div id="audienceSegmentsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
@@ -251,10 +279,10 @@
       <div class="glass-card rounded-2xl p-4 sm:p-5">
         <div class="mb-3">
           <h3 class="text-sm font-bold text-white">🏆 Top 3 Video Paling Viral (Winning Content)</h3>
-          <p class="text-xs text-zinc-400">Pola konten dengan views tertinggi di rentang pilihan.</p>
+          <p class="text-xs text-zinc-400">Pola konten dengan views tertinggi di rentang waktu pilihan.</p>
         </div>
         <div id="topWinningList" class="space-y-2.5 text-xs">
-          <div class="text-zinc-500 py-4 text-center">Belum ada data video.</div>
+          <div class="text-zinc-500 py-4 text-center">Belum ada data video pada rentang ini.</div>
         </div>
       </div>
 
@@ -269,7 +297,7 @@
       </div>
     </div>
 
-    <!-- Charts & CSV Sync -->
+    <!-- Charts & Affiliate Product Click / GMV Sync -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       <div class="glass-card rounded-2xl p-4 sm:p-5">
         <h3 class="text-sm font-bold text-white">Distribusi Views per Jam Upload</h3>
@@ -287,25 +315,41 @@
         </div>
       </div>
 
-      <div class="glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
+      <!-- Affiliate Product Clicks & GMV Card -->
+      <div class="glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between space-y-3">
         <div>
-          <h3 class="text-sm font-bold text-white">Sync GMV & Simulasi Komisi</h3>
-          <p class="text-xs text-zinc-400 mt-1">Upload CSV Affiliate atau atur estimasi persentase komisi rata-rata kamu.</p>
-          <div class="mt-3 flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2">
-            <span class="text-xs text-zinc-400">Rata-rata Komisi (%):</span>
-            <input type="number" id="commissionRateInput" value="10" min="1" max="50" onchange="updateCommissionCalc()" class="w-16 bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-xs font-bold text-emerald-400 text-center">
-            <span class="text-xs text-zinc-500">%</span>
+          <h3 class="text-sm font-bold text-white">Sync Klik Produk & GMV Affiliate</h3>
+          <p class="text-xs text-zinc-400 mt-1">Upload CSV Affiliate atau isi angka manual dari TikTok Seller Center (otomatis sinkron ke PC & HP).</p>
+
+          <div class="mt-3 space-y-2">
+            <div class="flex items-center justify-between gap-2 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2">
+              <span class="text-xs text-zinc-400">Total Klik Produk:</span>
+              <input type="number" id="manualClicksInput" value="0" min="0" onchange="saveManualAffiliateStats()" class="w-28 bg-zinc-900 border border-zinc-700 rounded-lg px-2.5 py-1 text-xs font-bold text-amber-400 text-right tabular-nums">
+            </div>
+
+            <div class="flex items-center justify-between gap-2 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2">
+              <span class="text-xs text-zinc-400">Total GMV (Rp):</span>
+              <input type="number" id="manualGmvInput" value="0" min="0" onchange="saveManualAffiliateStats()" class="w-28 bg-zinc-900 border border-zinc-700 rounded-lg px-2.5 py-1 text-xs font-bold text-emerald-400 text-right tabular-nums">
+            </div>
+
+            <div class="flex items-center justify-between gap-2 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2">
+              <span class="text-xs text-zinc-400">Rata-rata Komisi (%):</span>
+              <div class="flex items-center gap-1">
+                <input type="number" id="commissionRateInput" value="10" min="1" max="50" onchange="saveManualAffiliateStats()" class="w-16 bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs font-bold text-emerald-400 text-center tabular-nums">
+                <span class="text-xs text-zinc-500">%</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <label class="mt-4 border-2 border-dashed border-zinc-700 hover:border-rose-500/70 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition bg-zinc-950/40">
-          <span class="text-2xl mb-1.5">📊</span>
-          <span class="text-xs font-semibold text-zinc-200">Upload File CSV Affiliate</span>
-          <span class="text-[11px] text-zinc-500 mt-0.5">Otomatis sinkron ke PC & HP</span>
+        <label class="border-2 border-dashed border-zinc-700 hover:border-rose-500/70 rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition bg-zinc-950/40">
+          <span class="text-xl mb-1">📊</span>
+          <span class="text-xs font-semibold text-zinc-200">Atau Upload File CSV Affiliate</span>
+          <span class="text-[10px] text-zinc-500 mt-0.5">Otomatis membaca Klik Produk & GMV</span>
           <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
         </label>
 
-        <div id="csvStatus" class="mt-2.5 text-[11px] text-zinc-400 text-center truncate">Siap menerima file CSV.</div>
+        <div id="csvStatus" class="text-[11px] text-zinc-400 text-center truncate">Siap menerima file CSV atau input manual.</div>
       </div>
     </div>
 
@@ -378,7 +422,7 @@
   <div id="configModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl">
       <div>
-        <h3 class="text-base font-bold text-white">Konfigurasi Cloud V.4.0 (Firebase Sync)</h3>
+        <h3 class="text-base font-bold text-white">Konfigurasi Cloud V.4.2 (Firebase Sync)</h3>
         <p class="text-xs text-zinc-400 mt-1">Perubahan di sini otomatis tersinkronisasi antara PC dan HP.</p>
       </div>
 
@@ -437,6 +481,7 @@
       refreshToken: "",
       user: null,
       videos: [],
+      productClicks: 0,
       gmvTotal: 0,
       commissionRate: 10,
       csvFileName: "",
@@ -444,7 +489,6 @@
       aiAudit: null
     };
 
-    // Baseline in-memory untuk melacak kenaikan/penurunan real-time setiap siklus timer
     let pulseBaseline = null;
     let videoDeltaMap = {};
     let hourlyChartInstance = null;
@@ -452,6 +496,30 @@
     let countdownTimer = null;
     let secondsRemaining = 60;
     let totalIntervalSeconds = 60;
+
+    function initDefaultCustomDates() {
+      const endInput = document.getElementById("dateEndInput");
+      const startInput = document.getElementById("dateStartInput");
+      if (!endInput || !startInput) return;
+      const now = new Date();
+      const past = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      endInput.value = now.toISOString().split("T")[0];
+      startInput.value = past.toISOString().split("T")[0];
+    }
+
+    window.handleScopeChange = function() {
+      const scope = document.getElementById("analysisScopeSelect")?.value;
+      const customBar = document.getElementById("customDateBar");
+      if (scope === "custom") {
+        customBar.classList.remove("hidden");
+        if (!document.getElementById("dateStartInput").value) {
+          initDefaultCustomDates();
+        }
+      } else {
+        customBar.classList.add("hidden");
+      }
+      window.recalculateAll();
+    };
 
     function formatDeltaBadge(elId, diff) {
       const el = document.getElementById(elId);
@@ -501,7 +569,6 @@
       formatDeltaBadge("liveViewsDelta", viewsDiff);
       formatDeltaBadge("liveFollowersDelta", followersDiff);
 
-      // Hitung perubahan per video
       const changedVideos = [];
       videoDeltaMap = {};
 
@@ -574,7 +641,7 @@
       setCloudIndicator("saving", "Syncing...");
       try {
         await setDoc(STUDIO_DOC_REF, partialData, { merge: true });
-        setCloudIndicator("synced", "V.4.0 Live");
+        setCloudIndicator("synced", "V.4.2 Live");
       } catch (err) {
         console.error("Firestore save error:", err);
         setCloudIndicator("error", "Cloud Error");
@@ -582,7 +649,7 @@
     }
 
     onSnapshot(STUDIO_DOC_REF, (snapshot) => {
-      setCloudIndicator("synced", "V.4.0 Live");
+      setCloudIndicator("synced", "V.4.2 Live");
       if (snapshot.exists()) {
         const data = snapshot.data();
         cloudState = {
@@ -591,10 +658,9 @@
           config: { ...cloudState.config, ...(data.config || {}) }
         };
 
-        if (cloudState.commissionRate) {
-          document.getElementById("commissionRateInput").value = cloudState.commissionRate;
-        }
-        window.updateCommissionCalc(false);
+        document.getElementById("manualClicksInput").value = cloudState.productClicks || 0;
+        document.getElementById("manualGmvInput").value = cloudState.gmvTotal || 0;
+        document.getElementById("commissionRateInput").value = cloudState.commissionRate || 10;
 
         if (cloudState.csvFileName) {
           document.getElementById("csvStatus").textContent = `File aktif: ${cloudState.csvFileName}`;
@@ -603,7 +669,8 @@
         if (cloudState.user) {
           window.recalculateAll();
         } else {
-          updateStatusBanner("offline", "Firebase V.4.0 Terhubung", "Klik 'Connect TikTok' di PC satu kali untuk mulai memantau real-time.");
+          updateAffiliateKPIs(0);
+          updateStatusBanner("offline", "Firebase V.4.2 Terhubung", "Klik 'Connect TikTok' di PC satu kali untuk mulai memantau real-time.");
           renderCharts({}, {});
         }
       } else {
@@ -758,7 +825,7 @@
         avatarEl.classList.add("hidden");
       }
 
-      banner.className = "glass-card rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3.5 border-l-4 ";
+      banner.className = "glass-card rounded-2xl p-4 flex flex-col gap-3.5 border-l-4 ";
       if (type === "connected") {
         banner.classList.add("border-l-emerald-500");
         titleEl.className = "text-sm sm:text-base font-bold text-emerald-400 truncate";
@@ -785,12 +852,40 @@
     function getScopedVideos() {
       const all = [...(cloudState.videos || [])].sort((a, b) => (b.create_time || 0) - (a.create_time || 0));
       const scope = document.getElementById("analysisScopeSelect")?.value || "all";
+      const now = new Date();
+
       if (scope === "20") return all.slice(0, 20);
       if (scope === "10") return all.slice(0, 10);
+
+      if (scope === "7d") {
+        const cutoff = Math.floor((now.getTime() - 7 * 24 * 60 * 60 * 1000) / 1000);
+        return all.filter(v => (v.create_time || 0) >= cutoff);
+      }
+
+      if (scope === "30d") {
+        const cutoff = Math.floor((now.getTime() - 30 * 24 * 60 * 60 * 1000) / 1000);
+        return all.filter(v => (v.create_time || 0) >= cutoff);
+      }
+
+      if (scope === "this_month") {
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime() / 1000;
+        return all.filter(v => (v.create_time || 0) >= startOfMonth);
+      }
+
+      if (scope === "custom") {
+        const startStr = document.getElementById("dateStartInput")?.value;
+        const endStr = document.getElementById("dateEndInput")?.value;
+        const startTs = startStr ? Math.floor(new Date(`${startStr}T00:00:00`).getTime() / 1000) : 0;
+        const endTs = endStr ? Math.floor(new Date(`${endStr}T23:59:59`).getTime() / 1000) : Infinity;
+        return all.filter(v => {
+          const t = v.create_time || 0;
+          return t >= startTs && t <= endTs;
+        });
+      }
+
       return all;
     }
 
-    // Hitung Top 3 Jam Potensial + Audience Aktif (gabungan Views & Engagement Rate aktual)
     function computeTopHours(videoArray) {
       const stats = {};
       videoArray.forEach(v => {
@@ -810,7 +905,6 @@
           const prevHour = (hourInt - 1 + 24) % 24;
           const suggestedUpload = `${String(prevHour).padStart(2, "0")}:30 WIB`;
           const peakLabel = `${String(hourInt).padStart(2, "0")}:00 WIB`;
-          // Skor gabungan: rata-rata views + bobot interaksi audience aktif
           const activeScore = avgViews + (parseFloat(avgEng) * 15);
           return {
             hour: hourInt,
@@ -832,7 +926,8 @@
       const segContainer = document.getElementById("audienceSegmentsContainer");
 
       if (!rankedHours || rankedHours.length === 0) {
-        container.innerHTML = `<div class="col-span-3 bg-zinc-950/80 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-500 text-center">Belum ada data jam tayang video.</div>`;
+        container.innerHTML = `<div class="col-span-3 bg-zinc-950/80 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-500 text-center">Tidak ada video pada rentang tanggal yang dipilih.</div>`;
+        segContainer.innerHTML = `<div class="col-span-4 bg-zinc-950/70 rounded-xl p-3 border border-zinc-800/70 text-zinc-500 text-center">Belum ada data segmen pada rentang tanggal ini.</div>`;
         return;
       }
 
@@ -870,7 +965,6 @@
         `;
       }).join("");
 
-      // Hitung segmen Audience Aktif (Pagi, Siang, Sore, Malam)
       const segments = [
         { name: "🌅 Pagi (06–11)", min: 6, max: 11, views: 0, eng: 0, count: 0 },
         { name: "☀️ Siang (12–16)", min: 12, max: 16, views: 0, eng: 0, count: 0 },
@@ -904,6 +998,31 @@
       }).join("");
     }
 
+    function updateAffiliateKPIs(totalViews) {
+      const clicks = cloudState.productClicks || 0;
+      const gmv = cloudState.gmvTotal || 0;
+      const rate = cloudState.commissionRate || 10;
+
+      document.getElementById("kpiProductClicks").textContent = clicks.toLocaleString("id-ID");
+      const ctr = totalViews > 0 ? ((clicks / totalViews) * 100).toFixed(2) : "0.00";
+      document.getElementById("kpiProductCTR").textContent = `CTR: ${ctr}%`;
+
+      const estComm = Math.round(gmv * (rate / 100));
+      document.getElementById("kpiGMV").textContent = `Rp ${gmv.toLocaleString("id-ID")}`;
+      document.getElementById("kpiEstCommission").textContent = `Komisi: Rp ${estComm.toLocaleString("id-ID")}`;
+    }
+
+    window.saveManualAffiliateStats = async function() {
+      const clicks = parseInt(document.getElementById("manualClicksInput")?.value || "0", 10) || 0;
+      const gmv = parseFloat(document.getElementById("manualGmvInput")?.value || "0") || 0;
+      const rate = parseFloat(document.getElementById("commissionRateInput")?.value || "10") || 10;
+      await saveToFirestore({
+        productClicks: clicks,
+        gmvTotal: gmv,
+        commissionRate: rate
+      });
+    };
+
     window.recalculateAll = function() {
       const user = cloudState.user;
       if (!user) return;
@@ -911,13 +1030,12 @@
       const allVideos = [...(cloudState.videos || [])].sort((a, b) => (b.create_time || 0) - (a.create_time || 0));
       const scopedVideos = getScopedVideos();
 
-      // Update Live Pulse Monitor
       updateLivePulseMonitor(user, allVideos);
 
       updateStatusBanner(
         "connected",
         `${user.display_name || "Creator"}`,
-        `Total Video: ${(user.video_count || allVideos.length).toLocaleString("id-ID")} • Dianalisis: ${scopedVideos.length} video • Total Likes: ${(user.likes_count || 0).toLocaleString("id-ID")}`,
+        `Total Video Akun: ${(user.video_count || allVideos.length).toLocaleString("id-ID")} • Filter Aktif: ${scopedVideos.length} video • Total Likes: ${(user.likes_count || 0).toLocaleString("id-ID")}`,
         user.avatar_url || ""
       );
 
@@ -955,6 +1073,8 @@
       document.getElementById("kpiAvgViews").textContent = avgViews.toLocaleString("id-ID");
       document.getElementById("kpiTotalViews").textContent = `${totalViews.toLocaleString("id-ID")} Total`;
 
+      updateAffiliateKPIs(totalViews);
+
       const avgER = totalViews > 0 ? ((totalEngagements / totalViews) * 100).toFixed(2) : "0.0";
       document.getElementById("kpiER").textContent = `${avgER}%`;
       const erStatusEl = document.getElementById("kpiERStatus");
@@ -964,6 +1084,9 @@
       } else if (scopedVideos.length > 0) {
         erStatusEl.textContent = "Perlu Hook";
         erStatusEl.className = "text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-amber-950/70 text-amber-400";
+      } else {
+        erStatusEl.textContent = "0 Video";
+        erStatusEl.className = "text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-400";
       }
 
       const { ranked: rankedHours, stats: hourStats } = computeTopHours(scopedVideos);
@@ -986,7 +1109,11 @@
       const winContainer = document.getElementById("topWinningList");
       const kwContainer = document.getElementById("topKeywordsList");
 
-      if (videos.length === 0) return;
+      if (videos.length === 0) {
+        winContainer.innerHTML = `<div class="text-zinc-500 py-4 text-center">Tidak ada video pada rentang tanggal yang dipilih.</div>`;
+        kwContainer.innerHTML = `<span class="text-xs text-zinc-500">Tidak ada kata kunci pada rentang ini.</span>`;
+        return;
+      }
 
       const top3 = [...videos].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 3);
       winContainer.innerHTML = top3.map((v, idx) => {
@@ -1030,7 +1157,7 @@
         .slice(0, 10);
 
       if (topKeywords.length === 0) {
-        kwContainer.innerHTML = `<span class="text-xs text-zinc-500">Belum cukup variasi caption untuk mengekstrak kata kunci.</span>`;
+        kwContainer.innerHTML = `<span class="text-xs text-zinc-500">Belum cukup variasi caption pada rentang ini.</span>`;
       } else {
         kwContainer.innerHTML = topKeywords.map(k => `
           <div class="px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center gap-2 text-xs">
@@ -1072,8 +1199,8 @@
       const mobileList = document.getElementById("mobileVideoCards");
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-zinc-500">Tidak ada video yang cocok.</td></tr>`;
-        mobileList.innerHTML = `<div class="p-6 text-center text-xs text-zinc-500">Tidak ada video yang cocok.</div>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-zinc-500">Tidak ada video pada rentang tanggal atau filter ini.</td></tr>`;
+        mobileList.innerHTML = `<div class="p-6 text-center text-xs text-zinc-500">Tidak ada video pada rentang tanggal atau filter ini.</div>`;
         return;
       }
 
@@ -1126,7 +1253,7 @@
         const shares = v.share_count || 0;
         const er = views > 0 ? (((likes + comments + shares) / views) * 100).toFixed(1) : "0.0";
         const dateObj = v.create_time ? new Date(v.create_time * 1000) : new Date();
-        const dateStr = dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+        const dateStr = dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "2-digit", hour: "2-digit", minute: "2-digit" });
         const titleText = v.title || v.video_description || "Video Tanpa Judul";
 
         const delta = videoDeltaMap[v.id] || { dLikes: 0, dViews: 0 };
@@ -1255,7 +1382,7 @@
       const top2 = rankedHours[1];
 
       weakEl.innerHTML = `
-        <li>Rata-rata views saat ini <strong>${avgViews.toLocaleString("id-ID")} views/video</strong> dari ${(user.follower_count || 0).toLocaleString("id-ID")} followers — perlu penguatan visual hook di 2 detik pertama agar lolos distribusi gelombang awal.</li>
+        <li>Rata-rata views pada rentang ini <strong>${avgViews.toLocaleString("id-ID")} views/video</strong> dari ${(user.follower_count || 0).toLocaleString("id-ID")} followers — perlu penguatan visual hook di 2 detik pertama agar lolos distribusi gelombang awal.</li>
         <li>Video teratas meraih <strong>${(topVideos[0]?.view_count || 0).toLocaleString("id-ID")} views</strong>, jauh melampaui rata-rata akun.</li>
       `;
       actEl.innerHTML = `
@@ -1269,7 +1396,7 @@
 
         const summaryTop = topVideos.map(v => `- "${(v.title || v.video_description || "").slice(0, 80)}" (${v.view_count} views, ${v.like_count} likes, ${v.duration} dtk)`).join("\n");
         const topHoursText = rankedHours.slice(0, 3).map((h, i) => `#${i + 1} Peak ${h.peakLabel} (Upload ${h.suggestedUpload}, avg ${h.avgViews} views)`).join(", ");
-        const prompt = `Kamu adalah konsultan strategi TikTok Fashion Affiliate. Analisis data akun "${user.display_name}" (${user.follower_count} followers, rata-rata ${avgViews} views/video, Top 3 Jam Potensial: ${topHoursText}).
+        const prompt = `Kamu adalah konsultan strategi TikTok Fashion Affiliate. Analisis data akun "${user.display_name}" (${user.follower_count} followers, rata-rata ${avgViews} views/video pada ${videos.length} video terpilih, Top 3 Jam Potensial: ${topHoursText}, Total Klik Produk: ${cloudState.productClicks || 0}, GMV: Rp ${cloudState.gmvTotal || 0}).
 Top 5 video terbaik:
 ${summaryTop}
 
@@ -1302,17 +1429,6 @@ Berikan respon JSON murni tanpa markdown dengan format:
       }
     };
 
-    window.updateCommissionCalc = async function(save = true) {
-      const rate = parseFloat(document.getElementById("commissionRateInput")?.value || "10") || 10;
-      const gmv = cloudState.gmvTotal || 0;
-      const estComm = Math.round(gmv * (rate / 100));
-      document.getElementById("kpiGMV").textContent = `Rp ${gmv.toLocaleString("id-ID")}`;
-      document.getElementById("kpiEstCommission").textContent = `Komisi: Rp ${estComm.toLocaleString("id-ID")}`;
-      if (save) {
-        await saveToFirestore({ commissionRate: rate });
-      }
-    };
-
     window.handleCSVUpload = function(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1322,19 +1438,31 @@ Berikan respon JSON murni tanpa markdown dengan format:
         skipEmptyLines: true,
         complete: async function(results) {
           let totalGMV = 0;
+          let totalClicks = 0;
+
           results.data.forEach(row => {
-            const gmvKey = Object.keys(row).find(k => k.toLowerCase().includes("gmv") || k.toLowerCase().includes("penjualan") || k.toLowerCase().includes("revenue"));
+            const keys = Object.keys(row);
+            const gmvKey = keys.find(k => k.toLowerCase().includes("gmv") || k.toLowerCase().includes("penjualan") || k.toLowerCase().includes("revenue"));
+            const clickKey = keys.find(k => k.toLowerCase().includes("click") || k.toLowerCase().includes("klik"));
+
             if (gmvKey && row[gmvKey]) {
               const num = parseFloat(String(row[gmvKey]).replace(/[^0-9.-]+/g, ""));
               if (!isNaN(num)) totalGMV += num;
             }
+            if (clickKey && row[clickKey]) {
+              const cNum = parseInt(String(row[clickKey]).replace(/[^0-9]+/g, ""), 10);
+              if (!isNaN(cNum)) totalClicks += cNum;
+            }
           });
-          await saveToFirestore({ gmvTotal: totalGMV, csvFileName: file.name });
+
+          const updatePayload = { gmvTotal: totalGMV, csvFileName: file.name };
+          if (totalClicks > 0) updatePayload.productClicks = totalClicks;
+
+          await saveToFirestore(updatePayload);
         }
       });
     };
 
-    // Real-Time Countdown Timer (Visual detik & progress bar)
     window.toggleAutoPoll = function() {
       if (countdownTimer) clearInterval(countdownTimer);
       const isChecked = document.getElementById("autoPollToggle")?.checked;
@@ -1371,6 +1499,7 @@ Berikan respon JSON murni tanpa markdown dengan format:
       }, 1000);
     };
 
+    initDefaultCustomDates();
     window.toggleAutoPoll();
     checkAuthCallback();
   </script>
