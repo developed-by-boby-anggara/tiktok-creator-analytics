@@ -879,7 +879,7 @@
 
     window.syncRealTimeData = async function(isManual = false) {
       if (!cloudState.accessToken && !cloudState.refreshToken) {
-        if (isManual) window.connectTikTok();
+   if (isManual) window.connectTikTok();
         return;
       }
 
