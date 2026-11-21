@@ -781,8 +781,10 @@
       }
     }
 
+  let initialSyncDone = false;
+
     onSnapshot(STUDIO_DOC_REF, (snapshot) => {
-      setCloudIndicator("synced", "V.5.0 Live");
+      setCloudIndicator("synced", "Live Cloud");
       if (snapshot.exists()) {
         const data = snapshot.data();
         cloudState = {
@@ -795,7 +797,9 @@
         document.getElementById("manualClicksInput").value = cloudState.productClicks || 0;
         document.getElementById("manualGmvInput").value = cloudState.gmvTotal || 0;
         document.getElementById("commissionRateInput").value = cloudState.commissionRate || 10;
-        document.getElementById("adsCommissionInput").value = cloudState.commissionRate || 10;
+        if (document.getElementById("adsCommissionInput")) {
+          document.getElementById("adsCommissionInput").value = cloudState.commissionRate || 10;
+        }
 
         if (cloudState.csvFileName) {
           document.getElementById("csvStatus").textContent = `File aktif: ${cloudState.csvFileName}`;
@@ -803,9 +807,13 @@
 
         if (cloudState.user) {
           window.recalculateAll();
+          if (!initialSyncDone && (cloudState.accessToken || cloudState.refreshToken)) {
+            initialSyncDone = true;
+            window.syncRealTimeData(false);
+          }
         } else {
           updateAffiliateKPIs(0);
-          updateStatusBanner("offline", "Firebase V.5.0 Terhubung", "Klik 'Connect TikTok' di PC satu kali untuk mulai memantau real-time.");
+          updateStatusBanner("offline", "Firebase Terhubung", "Klik 'Connect TikTok' satu kali untuk mulai memantau real-time.");
           renderCharts({}, {});
         }
       } else {
@@ -881,10 +889,12 @@
             videos: data.videos || [],
             lastSync: nowStr
           });
-        } else if (res.status === 401 && isManual) {
-          alert("Sesi token TikTok habis. Mengarahkan ke otorisasi ulang...");
-          window.connectTikTok();
-        }
+       } else if (res.status === 401) {
+          updateStatusBanner("error", "Sesi TikTok Kedaluwarsa", "Klik tombol 'Connect TikTok' di kanan atas untuk menyegarkan koneksi real-time.");
+          if (isManual) {
+            alert("Sesi token TikTok habis. Mengarahkan ke otorisasi ulang...");
+            window.connectTikTok();
+          }
       } catch (err) {
         console.error("Sync error:", err);
       } finally {
