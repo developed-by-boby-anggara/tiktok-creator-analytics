@@ -908,12 +908,13 @@
             videos: data.videos || [],
             lastSync: nowStr
           });
-       } else if (res.status === 401) {
+      } else if (res.status === 401) {
           updateStatusBanner("error", "Sesi TikTok Kedaluwarsa", "Klik tombol 'Connect TikTok' di kanan atas untuk menyegarkan koneksi real-time.");
           if (isManual) {
             alert("Sesi token TikTok habis. Mengarahkan ke otorisasi ulang...");
             window.connectTikTok();
           }
+        }
       } catch (err) {
         console.error("Sync error:", err);
       } finally {
@@ -1397,11 +1398,13 @@
       }
     };
 
-    window.removeAdCampaign = async function(campId) {
+ window.removeAdCampaign = async function(campId) {
       if (!confirm("Hapus campaign Ads ini dari daftar pemantauan?")) return;
       const updated = (cloudState.adCampaigns || []).filter(c => c.id !== campId);
       await saveToFirestore({ adCampaigns: updated });
     };
+
+    function computeTopHours(videoArray) {
       const stats = {};
       videoArray.forEach(v => {
         const d = v.create_time ? new Date(v.create_time * 1000) : new Date();
