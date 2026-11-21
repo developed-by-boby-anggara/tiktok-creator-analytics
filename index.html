@@ -224,41 +224,47 @@
     <!-- ========================================================================= -->
     <!-- V.5.0 NEW FEATURE: TIKTOK SPARK ADS ROI, WORTH-IT & RECOMMENDATION ENGINE -->
     <!-- ========================================================================= -->
+    <!-- ========================================================================= -->
+    <!-- V.5.1 PRO: SPARK ADS ROI, PPN 11%, KILL-SWITCH & A/B BATTLE ENGINE        -->
+    <!-- ========================================================================= -->
     <div id="adsIntelligenceSection" class="glass-card rounded-2xl p-4 sm:p-6 border border-amber-500/35 space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40">🚀 Spark Ads Intelligence</span>
-            <h3 class="text-sm sm:text-base font-bold text-white">Rekomendasi Postingan Ads & Kalkulator Worth-It Real-Time</h3>
+            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40">🚀 Spark Ads Pro Engine</span>
+            <h3 class="text-sm sm:text-base font-bold text-white">Kalkulator BEP, PPN 11% & Kill-Switch Ads Real-Time</h3>
           </div>
-          <p class="text-xs text-zinc-400 mt-1">Deteksi otomatis video terbaik untuk di-boost serta pantau apakah biaya ads kamu menghasilkan profit atau boncos secara real-time.</p>
+          <p class="text-xs text-zinc-400 mt-1">Hitung target minimal produk terjual (BEP) per video dan pantau sinyal Stop-Loss vs Scale-Up secara real-time.</p>
         </div>
         <div id="adsSummaryPill" class="px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-semibold text-zinc-300 self-start sm:self-center">
           0 Campaign Aktif
         </div>
       </div>
 
-      <!-- Sub-Grid: Rekomendasi Video Ads (Kiri) & Form Tambah / Simulasi Ads (Kanan) -->
+      <!-- Sub-Grid: Rekomendasi Video Ads (Kiri) & Form Simulasi Spesifik per Produk (Kanan) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <!-- Panel Kiri: Top 3 Rekomendasi Postingan untuk Di-Ads -->
-        <div class="lg:col-span-6 bg-zinc-950/80 border border-zinc-800/90 rounded-xl p-4 flex flex-col justify-between gap-3">
+        <div class="lg:col-span-5 bg-zinc-950/80 border border-zinc-800/90 rounded-xl p-4 flex flex-col justify-between gap-3">
           <div>
             <div class="flex items-center justify-between gap-2 mb-2">
               <span class="text-xs font-bold text-cyan-300 uppercase tracking-wide">🎯 Top 3 Video Paling Layak Di-Ads</span>
-              <span class="text-[10px] text-zinc-500">Skor Algoritma & Konversi</span>
+              <span class="text-[10px] text-zinc-500">Skor Organik</span>
             </div>
-            <p class="text-[11px] text-zinc-400 mb-3">Dipilih otomatis dari video dengan Engagement Rate & sinyal beli tertinggi agar biaya iklan lebih murah.</p>
+            <p class="text-[11px] text-zinc-400 mb-3">Dipilih otomatis dari video dengan Engagement Rate & sinyal komentar/share tertinggi agar biaya iklan lebih murah.</p>
             <div id="adsRecommendationsList" class="space-y-2.5 text-xs">
               <div class="text-zinc-500 py-4 text-center">Menunggu sinkronisasi katalog video...</div>
             </div>
           </div>
         </div>
 
-        <!-- Panel Kanan: Kalkulator & Tracker Postingan yang Di-Ads -->
-        <div class="lg:col-span-6 bg-zinc-950/80 border border-zinc-800/90 rounded-xl p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-amber-400 uppercase tracking-wide">🧮 Pasang / Simulasi Ads Postingan</span>
-            <span class="text-[10px] text-zinc-400">Tersimpan ke Cloud</span>
+        <!-- Panel Kanan: Form Input Spesifik per Postingan & Simulasi BEP -->
+        <div class="lg:col-span-7 bg-zinc-950/80 border border-zinc-800/90 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wide">🧮 Setup & Simulasi Ads Spesifik Produk</span>
+            <label class="flex items-center gap-1.5 text-[11px] text-zinc-300 cursor-pointer select-none">
+              <input type="checkbox" id="adsPpnCheckbox" checked onchange="updateAdsPreSimulation()" class="accent-amber-400 rounded">
+              <span>Hitung Pajak PPN 11%</span>
+            </label>
           </div>
 
           <div class="space-y-2.5">
@@ -269,53 +275,66 @@
               </select>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <div>
-                <label class="block text-[10px] font-medium text-zinc-400 mb-1">Modal Ads (Rp):</label>
+                <label class="block text-[10px] font-medium text-zinc-400 mb-1">Saldo Ads (Rp):</label>
                 <input type="number" id="adsBudgetInput" value="50000" min="5000" step="5000" oninput="updateAdsPreSimulation()" class="w-full px-2.5 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-bold text-amber-300 tabular-nums focus:outline-none focus:border-amber-400">
               </div>
               <div>
-                <label class="block text-[10px] font-medium text-zinc-400 mb-1">Komisi / Margin (%):</label>
+                <label class="block text-[10px] font-medium text-zinc-400 mb-1">Harga Produk (Rp):</label>
+                <input type="number" id="adsProductPriceInput" value="85000" min="5000" step="5000" oninput="updateAdsPreSimulation()" class="w-full px-2.5 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-bold text-cyan-300 tabular-nums focus:outline-none focus:border-amber-400">
+              </div>
+              <div>
+                <label class="block text-[10px] font-medium text-zinc-400 mb-1">Komisi (%):</label>
                 <input type="number" id="adsCommissionInput" value="10" min="1" max="80" oninput="updateAdsPreSimulation()" class="w-full px-2.5 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-bold text-emerald-400 tabular-nums focus:outline-none focus:border-amber-400">
               </div>
-              <div class="col-span-2 sm:col-span-1">
-                <label class="block text-[10px] font-medium text-zinc-400 mb-1">GMV Aktual (Opsional):</label>
-                <input type="number" id="adsActualGmvInput" value="0" min="0" step="10000" oninput="updateAdsPreSimulation()" placeholder="0 = Auto" class="w-full px-2.5 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-bold text-cyan-300 tabular-nums focus:outline-none focus:border-amber-400">
+              <div>
+                <label class="block text-[10px] font-medium text-zinc-400 mb-1">Durasi (Hari):</label>
+                <select id="adsDurationInput" onchange="updateAdsPreSimulation()" class="w-full px-2 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-bold text-white focus:outline-none focus:border-amber-400">
+                  <option value="1">1 Hari</option>
+                  <option value="2">2 Hari</option>
+                  <option value="3" selected>3 Hari</option>
+                  <option value="5">5 Hari</option>
+                  <option value="7">7 Hari</option>
+                </select>
               </div>
             </div>
 
             <!-- Kotak Simulasi Target Balik Modal (Live Preview) -->
-            <div id="adsSimulationPreview" class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3 text-xs space-y-1.5">
+            <div class="bg-zinc-900/95 border border-zinc-800 rounded-xl p-3 text-xs space-y-1.5 tabular-nums">
               <div class="flex items-center justify-between">
-                <span class="text-zinc-400">Target Minimal GMV Balik Modal (BEP):</span>
-                <span id="simBreakEvenGmv" class="font-extrabold text-white tabular-nums">Rp 500.000</span>
+                <span class="text-zinc-400">Total Biaya Riil (Termasuk PPN 11%):</span>
+                <span id="simTotalCostPpn" class="font-extrabold text-amber-300">Rp 55.500 (Rp 18.500/hari)</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-zinc-400">Estimasi Tambahan Views & Klik:</span>
-                <span id="simEstReach" class="font-semibold text-cyan-300 tabular-nums">+2.500 views • ~75 klik</span>
+                <span class="text-zinc-400">Target Balik Modal (BEP Minimal):</span>
+                <span id="simBreakEvenUnits" class="font-extrabold text-white">7 pcs terjual (Rp 595.000 GMV)</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-zinc-400">Prediksi Kelayakan Postingan Ini:</span>
-                <span id="simVerdictHint" class="font-bold text-emerald-400">Pilih video untuk melihat prediksi</span>
+                <span class="text-zinc-400">Proyeksi Trafik & Prediksi Kelayakan:</span>
+                <span id="simVerdictHint" class="font-bold text-emerald-400">Pilih video untuk prediksi</span>
               </div>
             </div>
 
             <button onclick="addAdCampaignTracker()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-zinc-950 font-extrabold text-xs transition shadow-lg shadow-amber-500/15">
-              🚀 Mulai Pantau Ads Real-Time di Postingan Ini
+              🚀 Mulai Pantau Ads & Kill-Switch Real-Time
             </button>
           </div>
         </div>
       </div>
 
+      <!-- Komparasi A/B Battle (Otomatis muncul jika ada >= 2 campaign aktif) -->
+      <div id="adsAbComparisonBox" class="hidden bg-zinc-950/90 border border-cyan-500/35 rounded-xl p-3.5 text-xs"></div>
+
       <!-- Daftar Campaign Ads yang Sedang Dipantau Real-Time -->
       <div class="space-y-2.5">
         <div class="flex items-center justify-between">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-300">📊 Status Worth-It Postingan yang Sedang Di-Ads (Real-Time)</h4>
-          <span class="text-[11px] text-zinc-500">Otomatis update setiap data TikTok masuk</span>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-300">📊 Monitor Kill-Switch & Profit Postingan Di-Ads (Real-Time)</h4>
+          <span class="text-[11px] text-zinc-500">Klik "📦 Input Terjual" untuk hitung profit riil</span>
         </div>
         <div id="activeAdsListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div class="col-span-2 bg-zinc-950/60 border border-dashed border-zinc-800 rounded-xl p-5 text-center text-xs text-zinc-500">
-            Belum ada postingan yang ditandai sedang di-Ads. Klik tombol <strong>"🎯 Pasang Ads"</strong> pada rekomendasi di atas untuk mulai memantau profit & kelayakannya.
+            Belum ada postingan yang ditandai sedang di-Ads. Klik tombol <strong>"🎯 Pasang Ads"</strong> pada rekomendasi di atas untuk mulai memantau.
           </div>
         </div>
       </div>
@@ -1031,21 +1050,93 @@
       return all;
     }
 
+// =========================================================================
+    // V.5.1 PRO: SPARK ADS PPN 11%, BEP PER PRODUK, KILL-SWITCH & A/B ENGINE
     // =========================================================================
-    // V.5.0: ADS INTELLIGENCE, RECOMMENDATION & REAL-TIME WORTH-IT ENGINE
-    // =========================================================================
+    function evaluateCampaignMetrics(camp, allVideos) {
+      const liveVid = allVideos.find(v => v.id === camp.videoId) || {};
+      const currentViews = liveVid.view_count !== undefined ? liveVid.view_count : (camp.startViews || 0);
+      const gainedViews = Math.max(0, currentViews - (camp.startViews || 0));
+
+      const baseBudget = Number(camp.budget) || 0;
+      const includePpn = camp.includePpn !== false;
+      const totalRealCost = includePpn ? Math.round(baseBudget * 1.11) : baseBudget;
+
+      const productPrice = Number(camp.productPrice) || 85000;
+      const commRate = Number(camp.commissionRate) || 10;
+      const durationDays = Math.max(1, Number(camp.durationDays) || 1);
+      const commissionPerUnit = Math.round(productPrice * (commRate / 100));
+
+      // Hitung estimasi saldo terpakai berdasarkan waktu berjalan vs durasi campaign
+      const startedTs = Number(camp.startedAtTs) || 0;
+      const elapsedHours = startedTs > 0 ? Math.max(0.2, (Date.now() - startedTs) / 3600000) : 2;
+      const totalPlanHours = durationDays * 24;
+      const spendRatio = Math.min(1, elapsedHours / totalPlanHours);
+      const estimatedSpentSoFar = startedTs > 0 ? Math.max(Math.round(totalRealCost * 0.15), Math.round(totalRealCost * spendRatio)) : totalRealCost;
+
+      // Biaya per view (CPV) riil berdasarkan saldo terpakai
+      const cpv = gainedViews > 0 ? Math.round(estimatedSpentSoFar / gainedViews) : 0;
+
+      // Target Balik Modal (Break-Even Point)
+      const breakEvenUnits = commissionPerUnit > 0 ? Math.ceil(totalRealCost / commissionPerUnit) : 0;
+      const breakEvenGmv = breakEvenUnits * productPrice;
+
+      // Cek apakah ada input penjualan/GMV aktual atau memakai estimasi real-time dari lonjakan trafik
+      const actualOrders = Number(camp.actualOrders) || 0;
+      const actualGmv = Number(camp.actualGmv) || 0;
+      const hasActualData = actualOrders > 0 || actualGmv > 0;
+
+      const { er } = computeVideoAdsScore(liveVid);
+      const estCtr = Math.min(0.055, Math.max(0.02, (er / 100) * 0.6));
+      const estClicks = Math.round(gainedViews * estCtr);
+      const estAutoOrders = Math.floor(estClicks * 0.03);
+      const estAutoGmv = estAutoOrders * productPrice;
+
+      const effectiveOrders = actualOrders > 0 ? actualOrders : (actualGmv > 0 ? Math.round(actualGmv / productPrice) : estAutoOrders);
+      const effectiveGmv = actualGmv > 0 ? actualGmv : (actualOrders > 0 ? actualOrders * productPrice : estAutoGmv);
+      const earnedCommission = Math.round(effectiveGmv * (commRate / 100));
+
+      const netProfit = earnedCommission - totalRealCost;
+      const roas = totalRealCost > 0 ? (earnedCommission / totalRealCost) : 0;
+      const remainingUnitsToBep = Math.max(0, breakEvenUnits - effectiveOrders);
+
+      return {
+        gainedViews,
+        baseBudget,
+        includePpn,
+        totalRealCost,
+        productPrice,
+        commRate,
+        commissionPerUnit,
+        durationDays,
+        estimatedSpentSoFar,
+        spendRatio,
+        cpv,
+        breakEvenUnits,
+        breakEvenGmv,
+        hasActualData,
+        effectiveOrders,
+        effectiveGmv,
+        earnedCommission,
+        netProfit,
+        roas,
+        remainingUnitsToBep
+      };
+    }
+
     function renderAdsIntelligence(allVideos) {
       const recContainer = document.getElementById("adsRecommendationsList");
       const selectEl = document.getElementById("adsVideoSelect");
       const activeContainer = document.getElementById("activeAdsListContainer");
       const summaryPill = document.getElementById("adsSummaryPill");
+      const abBox = document.getElementById("adsAbComparisonBox");
 
       if (!allVideos || allVideos.length === 0) return;
 
       // 1. Isi dropdown pilihan postingan video
       const prevSelected = selectEl.value;
       selectEl.innerHTML = allVideos.map(v => {
-        const title = (v.title || v.video_description || "Video Tanpa Judul").slice(0, 58);
+        const title = (v.title || v.video_description || "Video Tanpa Judul").slice(0, 55);
         const { score } = computeVideoAdsScore(v);
         return `<option value="${v.id}" class="bg-zinc-900">[Skor ${score}] ${title} (${(v.view_count || 0).toLocaleString("id-ID")} views)</option>`;
       }).join("");
@@ -1053,13 +1144,13 @@
         selectEl.value = prevSelected;
       }
 
-      // 2. Hitung Top 3 Video Paling Layak Di-Ads
+      // 2. Top 3 Rekomendasi Video Layak Di-Ads
       const scored = allVideos
         .map(v => ({ video: v, ...computeVideoAdsScore(v) }))
         .sort((a, b) => b.score - a.score)
         .slice(0, 3);
 
-      recContainer.innerHTML = scored.map((item, idx) => {
+      recContainer.innerHTML = scored.map(item => {
         const v = item.video;
         const title = v.title || v.video_description || "Video Tanpa Judul";
         const badgeColor = item.score >= 70
@@ -1083,64 +1174,79 @@
 
       window.updateAdsPreSimulation();
 
-      // 3. Render Daftar Campaign Ads yang Sedang Dipantau Real-Time
+      // 3. Evaluasi Seluruh Campaign Aktif
       const campaigns = cloudState.adCampaigns || [];
       summaryPill.textContent = `${campaigns.length} Campaign Aktif`;
 
       if (campaigns.length === 0) {
+        abBox.classList.add("hidden");
         activeContainer.innerHTML = `
           <div class="col-span-2 bg-zinc-950/60 border border-dashed border-zinc-800 rounded-xl p-5 text-center text-xs text-zinc-500">
-            Belum ada postingan yang ditandai sedang di-Ads. Pilih video di atas lalu klik <strong>"🚀 Mulai Pantau Ads Real-Time"</strong>.
+            Belum ada postingan yang ditandai sedang di-Ads. Pilih video di atas lalu klik <strong>"🚀 Mulai Pantau Ads & Kill-Switch Real-Time"</strong>.
           </div>
         `;
         return;
       }
 
-      activeContainer.innerHTML = campaigns.map(camp => {
-        const liveVid = allVideos.find(v => v.id === camp.videoId) || {};
-        const currentViews = liveVid.view_count !== undefined ? liveVid.view_count : camp.startViews;
-        const gainedViews = Math.max(0, currentViews - (camp.startViews || 0));
-        const budget = Number(camp.budget) || 0;
-        const commRate = Number(camp.commissionRate) || 10;
-        const actualGmv = Number(camp.actualGmv) || 0;
+      const evaluatedList = campaigns.map(camp => ({
+        camp,
+        m: evaluateCampaignMetrics(camp, allVideos)
+      }));
 
-        // CPV (Biaya per view selama ads)
-        const cpv = gainedViews > 0 ? Math.round(budget / gainedViews) : 0;
+      // 4. Tampilkan Komparasi A/B Battle jika ada >= 2 Campaign
+      if (evaluatedList.length >= 2) {
+        const sortedByPerf = [...evaluatedList].sort((a, b) => b.m.netProfit - a.m.netProfit || a.m.cpv - b.m.cpv);
+        const winner = sortedByPerf[0];
+        const runnerUp = sortedByPerf[1];
+        abBox.classList.remove("hidden");
+        abBox.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 mr-1.5">⚔️ A/B ADS WINNER</span>
+              <span class="font-bold text-white">${winner.camp.videoTitle.slice(0, 45)}</span>
+              <span class="text-zinc-400">unggul atas</span>
+              <span class="text-zinc-300">${runnerUp.camp.videoTitle.slice(0, 30)}</span>
+            </div>
+            <div class="text-[11px] text-emerald-400 font-bold shrink-0">
+              ROAS ${winner.m.roas.toFixed(2)}x • ${winner.m.cpv > 0 ? `Rp ${winner.m.cpv}/view` : "Trafik Awal"}
+            </div>
+          </div>
+        `;
+      } else {
+        abBox.classList.add("hidden");
+      }
 
-        // Hitung GMV & Komisi (Jika actualGmv > 0 pakai data aktual, jika 0 estimasikan dari lonjakan views selama ads)
-        const { er } = computeVideoAdsScore(liveVid);
-        const estCtr = Math.min(0.055, Math.max(0.02, (er / 100) * 0.6));
-        const estClicks = Math.round(gainedViews * estCtr);
-        const estOrders = estClicks * 0.03;
-        const autoEstGmv = Math.round(estOrders * 85000);
-
-        const effectiveGmv = actualGmv > 0 ? actualGmv : autoEstGmv;
-        const gmvSourceLabel = actualGmv > 0 ? "Aktual" : "Est. Real-Time";
-        const earnedCommission = Math.round(effectiveGmv * (commRate / 100));
-        const netProfit = earnedCommission - budget;
-        const commRoas = budget > 0 ? (earnedCommission / budget).toFixed(2) : "0.00";
-        const breakEvenGmv = commRate > 0 ? Math.round(budget / (commRate / 100)) : 0;
-
-        // Tentukan Status Worth It vs Boncos
+      // 5. Render Kartu Campaign dengan Logika Kill-Switch
+      activeContainer.innerHTML = evaluatedList.map(({ camp, m }) => {
         let statusCardClass = "border-zinc-700 bg-zinc-950/90";
-        let verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">⏳ BARU MULAI (PANTAU TRAFIK)</span>`;
-        let adviceText = `Butuh minimal <strong>Rp ${breakEvenGmv.toLocaleString("id-ID")}</strong> GMV agar komisi (${commRate}%) menutup modal iklan Rp ${budget.toLocaleString("id-ID")}.`;
+        let verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">⏳ FASE LEARNING (BARU JALAN)</span>`;
+        let adviceText = `Target balik modal: minimal <strong>${m.breakEvenUnits} pcs terjual</strong> (GMV Rp ${m.breakEvenGmv.toLocaleString("id-ID")}) untuk menutup biaya riil Rp ${m.totalRealCost.toLocaleString("id-ID")}.`;
 
-        if (gainedViews >= 50 || actualGmv > 0) {
-          if (netProfit > 0 && parseFloat(commRoas) >= 1.15) {
-            statusCardClass = "border-emerald-500/50 bg-emerald-950/15";
-            verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">🟢 WORTH IT (PROFIT +Rp ${netProfit.toLocaleString("id-ID")})</span>`;
-            adviceText = `ROAS Komisi <strong>${commRoas}x</strong>! Performa iklan sehat & menguntungkan, layak ditambah budget.`;
-          } else if (netProfit >= -budget * 0.25 && (cpv > 0 && cpv <= 40)) {
-            statusCardClass = "border-amber-500/50 bg-amber-950/15";
-            verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40">🟡 IMPAS / PANTAU (ROAS ${commRoas}x)</span>`;
-            adviceText = `Biaya per view masih murah (Rp ${cpv}/view). Pantau 6–12 jam lagi untuk mengejar target BEP Rp ${breakEvenGmv.toLocaleString("id-ID")}.`;
+        if (m.gainedViews >= 60 || m.hasActualData) {
+          if (m.roas >= 1.3 && m.netProfit > 0) {
+            const suggestedScale = Math.round(m.baseBudget * 1.4);
+            statusCardClass = "border-emerald-500/55 bg-emerald-950/15";
+            verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">🟢 SCALE UP: WORTH IT (+Rp ${m.netProfit.toLocaleString("id-ID")})</span>`;
+            adviceText = `ROAS Komisi <strong>${m.roas.toFixed(2)}x</strong> (sudah balik modal + PPN 11%)! Aman naikkan saldo ads ke <strong>Rp ${suggestedScale.toLocaleString("id-ID")}</strong>.`;
+          } else if (m.spendRatio >= 0.45 && m.earnedCommission === 0) {
+            const savedMoney = Math.max(0, m.totalRealCost - m.estimatedSpentSoFar);
+            statusCardClass = "border-rose-500/65 bg-rose-950/20";
+            verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/25 text-rose-400 border border-rose-500/50">🔴 KILL-SWITCH: STOP ADS SEKARANG!</span>`;
+            adviceText = `Saldo terpakai ~Rp ${m.estimatedSpentSoFar.toLocaleString("id-ID")} namun <strong>0 konversi</strong>. Matikan iklan sekarang untuk menyelamatkan sisa saldo ~Rp ${savedMoney.toLocaleString("id-ID")}!`;
+          } else if (m.cpv > 45 && m.roas < 0.8) {
+            statusCardClass = "border-rose-500/55 bg-rose-950/15";
+            verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40">🔴 BONCOS (CPV MAHAL Rp ${m.cpv}/view)</span>`;
+            adviceText = `Biaya per view terlalu mahal & komisi belum menutup modal. Hentikan iklan dan pindah ke video skor tertinggi.`;
           } else {
-            statusCardClass = "border-rose-500/50 bg-rose-950/15";
-            verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40">🔴 BONCOS / KURANG WORTH IT</span>`;
-            adviceText = `Komisi (Rp ${earnedCommission.toLocaleString("id-ID")}) belum menutup modal ads (Rp ${budget.toLocaleString("id-ID")}). Pertimbangkan stop & pindah ke video skor tertinggi.`;
+            statusCardClass = "border-amber-500/50 bg-amber-950/15";
+            verdictBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/40">🟡 PANTAU KETAT (ROAS ${m.roas.toFixed(2)}x)</span>`;
+            adviceText = m.remainingUnitsToBep > 0
+              ? `CPV sehat (Rp ${m.cpv}/view). Butuh <strong>${m.remainingUnitsToBep} pcs lagi</strong> (komisi Rp ${m.commissionPerUnit.toLocaleString("id-ID")}/pcs) agar tembus BEP!`
+              : `Hampir balik modal! Pertahankan iklan berjalan sambil membalas komentar calon pembeli.`;
           }
         }
+
+        const dataSourceTag = m.hasActualData ? "Aktual" : "Est. API";
 
         return `
           <div class="rounded-xl p-4 border ${statusCardClass} space-y-3 tabular-nums">
@@ -1148,7 +1254,9 @@
               <div class="min-w-0">
                 <div class="mb-1.5">${verdictBadge}</div>
                 <div class="text-xs font-bold text-white line-clamp-1">${camp.videoTitle}</div>
-                <div class="text-[10px] text-zinc-400 mt-0.5">Mulai: ${camp.startedAt} • Modal: <strong class="text-amber-300">Rp ${budget.toLocaleString("id-ID")}</strong></div>
+                <div class="text-[10px] text-zinc-400 mt-0.5">
+                  Biaya Riil: <strong class="text-amber-300">Rp ${m.totalRealCost.toLocaleString("id-ID")}</strong> ${m.includePpn ? "(inc. PPN 11%)" : ""} • ${m.durationDays} Hari
+                </div>
               </div>
               <button onclick="removeAdCampaign('${camp.id}')" title="Hapus campaign" class="px-2 py-1 rounded-lg bg-zinc-900 hover:bg-rose-950 text-[10px] text-zinc-400 hover:text-rose-400 border border-zinc-800">
                 ✕
@@ -1158,27 +1266,27 @@
             <div class="grid grid-cols-3 gap-2 bg-zinc-950/90 p-2.5 rounded-lg border border-zinc-800/80 text-center">
               <div>
                 <div class="text-[9px] text-zinc-500">Views Ads</div>
-                <div class="text-xs font-extrabold text-cyan-400">+${gainedViews.toLocaleString("id-ID")}</div>
-                <div class="text-[9px] text-zinc-400">${gainedViews > 0 ? `Rp ${cpv}/view` : "Menunggu"}</div>
+                <div class="text-xs font-extrabold text-cyan-400">+${m.gainedViews.toLocaleString("id-ID")}</div>
+                <div class="text-[9px] text-zinc-400">${m.gainedViews > 0 ? `Rp ${m.cpv}/view` : "Menunggu"}</div>
               </div>
               <div>
-                <div class="text-[9px] text-zinc-500">GMV (${gmvSourceLabel})</div>
-                <div class="text-xs font-extrabold text-white">Rp ${effectiveGmv.toLocaleString("id-ID")}</div>
-                <div class="text-[9px] text-zinc-400">Komisi: Rp ${earnedCommission.toLocaleString("id-ID")}</div>
+                <div class="text-[9px] text-zinc-500">Terjual (${dataSourceTag})</div>
+                <div class="text-xs font-extrabold text-white">${m.effectiveOrders} pcs <span class="text-[9px] font-normal text-zinc-400">/ ${m.breakEvenUnits} BEP</span></div>
+                <div class="text-[9px] text-zinc-400">Komisi: Rp ${m.earnedCommission.toLocaleString("id-ID")}</div>
               </div>
               <div>
-                <div class="text-[9px] text-zinc-500">Net Profit</div>
-                <div class="text-xs font-extrabold ${netProfit >= 0 ? "text-emerald-400" : "text-rose-400"}">
-                  ${netProfit >= 0 ? "+" : ""}Rp ${netProfit.toLocaleString("id-ID")}
+                <div class="text-[9px] text-zinc-500">Net Profit Riil</div>
+                <div class="text-xs font-extrabold ${m.netProfit >= 0 ? "text-emerald-400" : "text-rose-400"}">
+                  ${m.netProfit >= 0 ? "+" : ""}Rp ${m.netProfit.toLocaleString("id-ID")}
                 </div>
-                <div class="text-[9px] text-zinc-400">BEP: Rp ${(breakEvenGmv / 1000).toFixed(0)}rb</div>
+                <div class="text-[9px] text-zinc-400">ROAS: ${m.roas.toFixed(2)}x</div>
               </div>
             </div>
 
             <div class="flex items-center justify-between gap-2 pt-1 border-t border-zinc-800/70">
               <p class="text-[11px] text-zinc-300 leading-snug flex-1">${adviceText}</p>
-              <button onclick="promptUpdateAdGmv('${camp.id}')" class="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[10px] font-semibold text-cyan-300 shrink-0">
-                ✏️ Input GMV
+              <button onclick="promptUpdateAdOrders('${camp.id}')" class="px-2.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-[10px] font-semibold text-cyan-300 shrink-0">
+                📦 Input Terjual
               </button>
             </div>
           </div>
@@ -1198,41 +1306,47 @@
     window.updateAdsPreSimulation = function() {
       const videoId = document.getElementById("adsVideoSelect")?.value;
       const budget = parseFloat(document.getElementById("adsBudgetInput")?.value || "50000") || 50000;
+      const includePpn = document.getElementById("adsPpnCheckbox")?.checked !== false;
+      const productPrice = parseFloat(document.getElementById("adsProductPriceInput")?.value || "85000") || 85000;
       const commRate = parseFloat(document.getElementById("adsCommissionInput")?.value || "10") || 10;
+      const durationDays = Math.max(1, parseInt(document.getElementById("adsDurationInput")?.value || "3", 10));
 
-      const breakEvenGmv = commRate > 0 ? Math.round(budget / (commRate / 100)) : 0;
-      document.getElementById("simBreakEvenGmv").textContent = `Rp ${breakEvenGmv.toLocaleString("id-ID")}`;
+      const totalRealCost = includePpn ? Math.round(budget * 1.11) : budget;
+      const dailySpend = Math.round(totalRealCost / durationDays);
+      const commissionPerUnit = Math.round(productPrice * (commRate / 100));
+      const breakEvenUnits = commissionPerUnit > 0 ? Math.ceil(totalRealCost / commissionPerUnit) : 0;
+      const breakEvenGmv = breakEvenUnits * productPrice;
+
+      document.getElementById("simTotalCostPpn").textContent = `Rp ${totalRealCost.toLocaleString("id-ID")} (Rp ${dailySpend.toLocaleString("id-ID")}/hari)`;
+      document.getElementById("simBreakEvenUnits").textContent = `${breakEvenUnits} pcs terjual (Rp ${breakEvenGmv.toLocaleString("id-ID")} GMV)`;
 
       const video = (cloudState.videos || []).find(v => v.id === videoId);
       if (!video) return;
 
-      const { score, er } = computeVideoAdsScore(video);
-      // Estimasi CPV Rp 20/view untuk video skor tinggi, Rp 30/view untuk standar
+      const { score } = computeVideoAdsScore(video);
       const estCpv = score >= 65 ? 18 : 28;
       const estViews = Math.round(budget / estCpv);
-      const estCtr = Math.min(0.055, Math.max(0.02, (er / 100) * 0.6));
-      const estClicks = Math.round(estViews * estCtr);
-
-      document.getElementById("simEstReach").textContent = `+${estViews.toLocaleString("id-ID")} views • ~${estClicks} klik keranjang`;
 
       const hintEl = document.getElementById("simVerdictHint");
       if (score >= 65) {
         hintEl.className = "font-bold text-emerald-400";
-        hintEl.textContent = `🟢 Sangat Layak (Skor ${score}/100)`;
+        hintEl.textContent = `+${estViews.toLocaleString("id-ID")} views • 🟢 Sangat Layak (Skor ${score}/100)`;
       } else if (score >= 40) {
         hintEl.className = "font-bold text-amber-300";
-        hintEl.textContent = `🟡 Cukup Layak (Skor ${score}/100)`;
+        hintEl.textContent = `+${estViews.toLocaleString("id-ID")} views • 🟡 Cukup Layak (Skor ${score}/100)`;
       } else {
         hintEl.className = "font-bold text-rose-400";
-        hintEl.textContent = `🔴 Berisiko Boncos (Skor ${score}/100)`;
+        hintEl.textContent = `+${estViews.toLocaleString("id-ID")} views • 🔴 Berisiko Boncos (Skor ${score}/100)`;
       }
     };
 
     window.addAdCampaignTracker = async function() {
       const videoId = document.getElementById("adsVideoSelect")?.value;
       const budget = parseFloat(document.getElementById("adsBudgetInput")?.value || "0") || 0;
+      const includePpn = document.getElementById("adsPpnCheckbox")?.checked !== false;
+      const productPrice = parseFloat(document.getElementById("adsProductPriceInput")?.value || "85000") || 85000;
       const commRate = parseFloat(document.getElementById("adsCommissionInput")?.value || "10") || 10;
-      const actualGmv = parseFloat(document.getElementById("adsActualGmvInput")?.value || "0") || 0;
+      const durationDays = Math.max(1, parseInt(document.getElementById("adsDurationInput")?.value || "3", 10));
 
       const video = (cloudState.videos || []).find(v => v.id === videoId);
       if (!video) {
@@ -1240,7 +1354,7 @@
         return;
       }
       if (budget <= 0) {
-        alert("Masukkan nominal modal/budget Ads yang valid.");
+        alert("Masukkan nominal saldo Ads yang valid.");
         return;
       }
 
@@ -1249,28 +1363,36 @@
         videoId: video.id,
         videoTitle: video.title || video.video_description || "Video Tanpa Judul",
         budget,
+        includePpn,
+        productPrice,
         commissionRate: commRate,
-        actualGmv,
+        durationDays,
+        actualOrders: 0,
+        actualGmv: 0,
         startViews: video.view_count || 0,
         startLikes: video.like_count || 0,
+        startedAtTs: Date.now(),
         startedAt: new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
       };
 
       const updated = [newCamp, ...(cloudState.adCampaigns || [])];
       await saveToFirestore({ adCampaigns: updated });
-      document.getElementById("adsActualGmvInput").value = "0";
     };
 
-    window.promptUpdateAdGmv = async function(campId) {
+    window.promptUpdateAdOrders = async function(campId) {
       const campaigns = [...(cloudState.adCampaigns || [])];
       const idx = campaigns.findIndex(c => c.id === campId);
       if (idx === -1) return;
 
-      const input = prompt("Masukkan total GMV penjualan (Rp) yang dihasilkan dari postingan Ads ini (isi 0 untuk kembali ke hitungan otomatis):", campaigns[idx].actualGmv || 0);
+      const input = prompt(
+        `Masukkan jumlah produk TERJUAL (pcs) dari postingan Ads ini (Harga: Rp ${(campaigns[idx].productPrice || 85000).toLocaleString("id-ID")}/pcs).\nIsi 0 untuk kembali ke hitungan otomatis:`,
+        campaigns[idx].actualOrders || 0
+      );
       if (input === null) return;
-      const num = parseFloat(String(input).replace(/[^0-9.]/g, ""));
-      if (!isNaN(num)) {
-        campaigns[idx].actualGmv = num;
+      const qty = parseInt(String(input).replace(/[^0-9]/g, ""), 10);
+      if (!isNaN(qty)) {
+        campaigns[idx].actualOrders = qty;
+        campaigns[idx].actualGmv = qty * (campaigns[idx].productPrice || 85000);
         await saveToFirestore({ adCampaigns: campaigns });
       }
     };
@@ -1280,8 +1402,6 @@
       const updated = (cloudState.adCampaigns || []).filter(c => c.id !== campId);
       await saveToFirestore({ adCampaigns: updated });
     };
-
-    function computeTopHours(videoArray) {
       const stats = {};
       videoArray.forEach(v => {
         const d = v.create_time ? new Date(v.create_time * 1000) : new Date();
